@@ -1,6 +1,9 @@
 package com.example.vibhati.musiccorner;
 
 import android.Manifest;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProvider;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.ContentResolver;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -36,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private static final String TAG = "MainActivity";
     RecyclerView recyclerView;
     private SongAdapter adapter;
+    private Cursor mCursor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +61,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
 //        getSongList();
-        getSupportLoaderManager().initLoader(LOADER_REQUEST,null,this);
+//        getSupportLoaderManager().initLoader(LOADER_REQUEST,null,this);
+          getSongs();
+    }
+
+    private void getSongs() {
+        SongDataModel songDataModel = ViewModelProviders.of(this).get(SongDataModel.class);
+        songDataModel.getSongLiveData().observe(this, new Observer<Cursor>() {
+            @Override
+            public void onChanged(@Nullable Cursor cursor) {
+                mCursor = cursor;
+                adapter.dataChanged(mCursor);
+            }
+        });
     }
 
     @Override
