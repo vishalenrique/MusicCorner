@@ -11,12 +11,14 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.List;
+
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder>{
 
     private Context mContext;
-    private Cursor mCursor;
+    private List<Song> mCursor;
 
-    public SongAdapter(Context mContext, Cursor mCursor) {
+    public SongAdapter(Context mContext, List<Song> mCursor) {
         this.mContext = mContext;
         this.mCursor = mCursor;
     }
@@ -32,17 +34,17 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull SongViewHolder songViewHolder, int position) {
-        mCursor.moveToPosition(position);
-        songViewHolder.titleTextView.setText(mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
-        songViewHolder.artistTextView.setText(mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
+        Song song = mCursor.get(position);
+        songViewHolder.titleTextView.setText(song.getTitle());
+        songViewHolder.artistTextView.setText(song.getArtist());
     }
 
     @Override
     public int getItemCount() {
-        return mCursor!=null?mCursor.getCount():0;
+        return mCursor!=null?mCursor.size():0;
     }
 
-    public void dataChanged(Cursor musicCursor) {
+    public void dataChanged(List<Song> musicCursor) {
             mCursor = musicCursor;
             notifyDataSetChanged();
     }

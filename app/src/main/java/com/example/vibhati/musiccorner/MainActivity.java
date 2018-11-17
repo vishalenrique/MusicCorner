@@ -30,6 +30,9 @@ import android.provider.MediaStore;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -67,11 +70,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void getSongs() {
         SongDataModel songDataModel = ViewModelProviders.of(this).get(SongDataModel.class);
-        songDataModel.getSongLiveData().observe(this, new Observer<Cursor>() {
+        songDataModel.getSongLiveData().observe(this, new Observer<List<Song>>() {
             @Override
-            public void onChanged(@Nullable Cursor cursor) {
-                mCursor = cursor;
-                adapter.dataChanged(mCursor);
+            public void onChanged(@Nullable List<Song> songs) {
+                adapter.dataChanged(songs);
             }
         });
     }
@@ -111,9 +113,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 //        }
 
 //        Toast.makeText(this, "Number of songs : " + musicCursor.getCount(), Toast.LENGTH_SHORT).show();
-        if(musicCursor !=null){
-            adapter.dataChanged(musicCursor);
-        }
+//        if(musicCursor !=null){
+//            adapter.dataChanged(musicCursor);
+//        }
 
 //        StringBuilder stringBuilder = new StringBuilder();
 //        for(int i=0;i<songList.size();i++){
@@ -155,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor cursor) {
         if(cursor !=null){
-            adapter.dataChanged(cursor);
+//            adapter.dataChanged(cursor);
         }
     }
 
