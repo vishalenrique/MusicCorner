@@ -2,4 +2,6 @@
     <string name="app_name">Music Corner</string>
     <string name="action_settings">Settings</string>
     <string name="songs_thumbnail">songs thumbnail</string>
+    <string name="action_shuffle">Shuffle</string>
+    <string name="action_exit">Exit</string>
 </resources>
