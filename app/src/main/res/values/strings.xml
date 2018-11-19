@@ -4,4 +4,6 @@
     <string name="songs_thumbnail">songs thumbnail</string>
     <string name="action_shuffle">Shuffle</string>
     <string name="action_exit">Exit</string>
+    <string name="title_activity_media_player">MediaPlayerActivity</string>
+    <string name="pause">Pause</string>
 </resources>
