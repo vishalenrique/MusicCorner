@@ -1,8 +1,6 @@
 package com.example.vibhati.musiccorner;
 
 import android.content.Context;
-import android.database.Cursor;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -21,7 +19,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
 
     public interface ClickListener{
-        public void onClick(int position);
+        public void onClick(Song song);
     }
 
     public SongAdapter(Context mContext, List<Song> mCursor, ClickListener mClickListener) {
@@ -41,7 +39,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull SongViewHolder songViewHolder, int position) {
-        Song song = mCursor.get(position);
+        final Song song = mCursor.get(position);
         songViewHolder.titleTextView.setText(song.getTitle());
         songViewHolder.artistTextView.setText(song.getArtist());
 
@@ -49,7 +47,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         songViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mClickListener.onClick(currentPosition);
+                mClickListener.onClick(song);
             }
         });
     }

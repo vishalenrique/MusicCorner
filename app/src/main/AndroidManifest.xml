@@ -18,13 +18,7 @@
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
 
         <service
             android:name=".MusicService"
@@ -36,10 +30,8 @@
             </intent-filter>
         </service>
 
-        <receiver android:name=".MediaPlaybackService$BecomingNoisyReceiver"
-            />
-
-        <receiver android:name="android.support.v4.media.session.MediaButtonReceiver" >
+        <receiver android:name=".MediaPlaybackService$BecomingNoisyReceiver" />
+        <receiver android:name="android.support.v4.media.session.MediaButtonReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
@@ -48,7 +40,19 @@
         <activity
             android:name=".MediaPlayerActivity"
             android:label="@string/title_activity_media_player"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        >
+        <activity
+            android:name=".SongsActivity"
+            android:label="@string/title_activity_songs"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

@@ -2,7 +2,6 @@ package com.example.vibhati.musiccorner;
 
 import android.Manifest;
 import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ContentResolver;
 import android.content.pm.PackageManager;
@@ -12,8 +11,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -25,13 +22,9 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 import android.provider.MediaStore;
-import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import android.os.IBinder;
@@ -39,8 +32,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.view.MenuItem;
-import android.view.View;
 
 
 import com.example.vibhati.musiccorner.MusicService.MusicBinder;
@@ -264,8 +255,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    public void onClick(int position) {
-        musicSrv.setSong(position);
+    public void onClick(Song song) {
+
+        //undo this
+
+//        musicSrv.setSong(position);
+
+
         musicSrv.playSong();
         if(playbackPaused){
             setController();

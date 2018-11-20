@@ -2,8 +2,8 @@ package com.example.vibhati.musiccorner;
 
 import android.app.Notification;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -11,23 +11,19 @@ import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaBrowserServiceCompat;
-import android.support.v4.media.MediaDescriptionCompat;
-import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaButtonReceiver;
-import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
+import android.util.Log;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MediaPlaybackService extends MediaBrowserServiceCompat {
@@ -53,6 +49,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
     private AudioFocusRequest audioFocusRequest;
 
+    Uri trackUri;
+
     //callback should be used to handle
 
     private String channelId = "channelId";
@@ -62,6 +60,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         //2
         @Override
         public void onPlay() {
+
+            Log.i(TAG,"onPlay entered");
 
             //service should start here startService()
             //also put the service in the foreground
@@ -73,51 +73,51 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             // Create a NotificationCompat.Builder
 
              // Get the session's metadata
-            MediaControllerCompat controller = mMediaSession.getController();
-            MediaMetadataCompat mediaMetadata = controller.getMetadata();
-            MediaDescriptionCompat description = mediaMetadata.getDescription();
-
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(MediaPlaybackService.this, channelId);
-
-            builder
-                    // Add the metadata for the currently playing track
-                    .setContentTitle(description.getTitle())
-                    .setContentText(description.getSubtitle())
-                    .setSubText(description.getDescription())
-                    .setLargeIcon(description.getIconBitmap())
-
-                    // Enable launching the player by clicking the notification
-                    .setContentIntent(controller.getSessionActivity())
-
-                    // Stop the service when the notification is swiped away
-                    .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(MediaPlaybackService.this,
-                            PlaybackStateCompat.ACTION_STOP))
-
-                    // Make the transport controls visible on the lockscreen
-                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-
-                    // Add an app icon and set its accent color
-                    // Be careful about the color
-                    .setSmallIcon(R.drawable.play)
-                    .setColor(ContextCompat.getColor(MediaPlaybackService.this, R.color.colorPrimaryDark))
-
-                    // Add a pause button
-                    .addAction(new NotificationCompat.Action(
-                            R.drawable.pause, getString(R.string.pause),
-                            MediaButtonReceiver.buildMediaButtonPendingIntent(MediaPlaybackService.this,
-                                    PlaybackStateCompat.ACTION_PLAY_PAUSE)))
-
-                    // Take advantage of MediaStyle features
-                    .setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
-                            .setMediaSession(mMediaSession.getSessionToken())
-                            .setShowActionsInCompactView(0)
-
-                            // Add a cancel button
-                            .setShowCancelButton(true)
-                            .setCancelButtonIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(MediaPlaybackService.this,
-                                    PlaybackStateCompat.ACTION_STOP)));
-
-            myPlayerNotification = builder.build();
+//            MediaControllerCompat controller = mMediaSession.getController();
+//            MediaMetadataCompat mediaMetadata = controller.getMetadata();
+//            MediaDescriptionCompat description = mediaMetadata.getDescription();
+//
+//            NotificationCompat.Builder builder = new NotificationCompat.Builder(MediaPlaybackService.this, channelId);
+//
+//            builder
+//                    // Add the metadata for the currently playing track
+//                    .setContentTitle(description.getTitle())
+//                    .setContentText(description.getSubtitle())
+//                    .setSubText(description.getDescription())
+//                    .setLargeIcon(description.getIconBitmap())
+//
+//                    // Enable launching the player by clicking the notification
+//                    .setContentIntent(controller.getSessionActivity())
+//
+//                    // Stop the service when the notification is swiped away
+//                    .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(MediaPlaybackService.this,
+//                            PlaybackStateCompat.ACTION_STOP))
+//
+//                    // Make the transport controls visible on the lockscreen
+//                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+//
+//                    // Add an app icon and set its accent color
+//                    // Be careful about the color
+//                    .setSmallIcon(R.drawable.play)
+//                    .setColor(ContextCompat.getColor(MediaPlaybackService.this, R.color.colorPrimaryDark))
+//
+//                    // Add a pause button
+//                    .addAction(new NotificationCompat.Action(
+//                            R.drawable.pause, getString(R.string.pause),
+//                            MediaButtonReceiver.buildMediaButtonPendingIntent(MediaPlaybackService.this,
+//                                    PlaybackStateCompat.ACTION_PLAY_PAUSE)))
+//
+//                    // Take advantage of MediaStyle features
+//                    .setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
+//                            .setMediaSession(mMediaSession.getSessionToken())
+//                            .setShowActionsInCompactView(0)
+//
+//                            // Add a cancel button
+//                            .setShowCancelButton(true)
+//                            .setCancelButtonIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(MediaPlaybackService.this,
+//                                    PlaybackStateCompat.ACTION_STOP)));
+//
+//            myPlayerNotification = builder.build();
 
              // Display the notification and place the service in the foreground
 //            startForeground(id, builder.build());
@@ -147,24 +147,88 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             }
 
             if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+
+                Log.i(TAG,"AUDIO_GRANTED entered");
+
                 // Start the service
                 startService(new Intent(getApplicationContext(), MediaBrowserServiceCompat.class));
                 // Set the session active  (and update metadata and state)
                 mMediaSession.setActive(true);
                 // start the player (custom call)
-                player.start();
+                player.setOnPreparedListener(new MyPlaybackListener());
+                try{
+                    player.setDataSource(getApplicationContext(), trackUri);
+                }
+                catch(Exception e){
+                    Log.e("MUSIC SERVICE", "Error setting data source", e);
+                }
+                player.prepareAsync();
+//                player.start();
                 // Register BECOME_NOISY BroadcastReceiver
                 registerReceiver(myNoisyAudioStreamReceiver, intentFilter);
                 // Put the service in the foreground, post notification
 
 //                service.startForeground(id, myPlayerNotification);
-                startForeground(id, myPlayerNotification);
+//                startForeground(id, myPlayerNotification);
+            }
+            Log.i(TAG,"onPlay exit");
+        }
+
+        class MyPlaybackListener implements MediaPlayer.OnPreparedListener{
+
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                player.start();
+            }
+        }
+
+        @Override
+        public void onPlayFromMediaId(String mediaId, Bundle extras) {
+            AudioManager am = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+            // Request audio focus for playback, this registers the afChangeListener
+            AudioAttributes attrs = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                attrs = new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build();
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                audioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                        .setOnAudioFocusChangeListener(afChangeListener)
+                        .setAudioAttributes(attrs)
+                        .setAcceptsDelayedFocusGain(true)
+                        .build();
+            }
+            int result = 0;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                result = am.requestAudioFocus(audioFocusRequest);
+            }else {
+                result = am.requestAudioFocus(afChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+            }
+
+            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+
+                player.reset();
+                mMediaSession.setActive(true);
+                long currSong = Long.parseLong(mediaId);
+                player.setOnPreparedListener(new MyPlaybackListener());
+                //set uri
+                Uri trackUri = ContentUris.withAppendedId(
+                        android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                        currSong);
+                try {
+                    player.setDataSource(getApplicationContext(), trackUri);
+                } catch (Exception e) {
+                    Log.e("MUSIC SERVICE", "Error setting data source", e);
+                }
+                player.prepareAsync();
             }
         }
 
         @Override
         public void onStop() {
 
+            Log.i(TAG,"onStop entered");
             //service should stop here stopService() or stopSelf()
 
             AudioManager am = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
@@ -184,11 +248,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             player.stop();
             // Take the service out of the foreground
 //            service.stopForeground(false);
-            stopForeground(false);
+//            stopForeground(false);
+
+            Log.i(TAG,"onStop exit");
         }
 
         @Override
         public void onPause() {
+            Log.i(TAG,"onPause entered");
             AudioManager am = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
             // Update metadata and state
             // pause the player (custom call)
@@ -197,15 +264,18 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             unregisterReceiver(myNoisyAudioStreamReceiver);
             // Take the service out of the foreground, retain the notification
 //            service.stopForeground(false);
-            stopForeground(false);
+//            stopForeground(false);
+            Log.i(TAG,"onPause exit");
         }
     };
+    private List<Song> mData;
 
     ////////////////////////
 
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.i(TAG,"onCreate entered");
         mMediaSession = new MediaSessionCompat(MediaPlaybackService.this, TAG);
 
         // Enable callbacks from MediaButtons and TransportControls
@@ -235,6 +305,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         setSessionToken(mMediaSession.getSessionToken());
 
         player = new MediaPlayer();
+        mData = MediaLibrary.getData(this);
+        Log.i(TAG,"data size"+ mData.size());
+        Log.i(TAG,"onCreate exit");
     }
 
     @Nullable
@@ -292,6 +365,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.i(TAG,"onStart entered");
         MediaButtonReceiver.handleIntent(mMediaSession, intent);
         return super.onStartCommand(intent, flags, startId);
     }
