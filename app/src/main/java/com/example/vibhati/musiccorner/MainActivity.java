@@ -367,4 +367,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
         controller.show(0);
     }
+
+    public void stopService(View view) {
+    }
 }

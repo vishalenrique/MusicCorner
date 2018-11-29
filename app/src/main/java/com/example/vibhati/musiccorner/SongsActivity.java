@@ -1,10 +1,14 @@
 package com.example.vibhati.musiccorner;
 
 import android.Manifest;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,6 +17,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -24,12 +31,32 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
     RecyclerView recyclerView;
     private SongAdapter adapter;
 
+    // Here
+    Button mPlayPause;
+    private MediaPlaybackService mService;
+    private boolean mBound = false;
+
+    ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MediaPlaybackService.LocalBinder localBinder = (MediaPlaybackService.LocalBinder) service;
+            mService = localBinder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mBound = false;
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        Log.i(TAG,"onCreate called");
 
         recyclerView = findViewById(R.id.rv_main);
         songList = new ArrayList<>();
@@ -38,6 +65,17 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
 
+        // Here
+        mPlayPause = findViewById(R.id.play_pause_main);
+        mPlayPause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mBound){
+                    mService.showLogs();
+                }
+            }
+        });
+
         //get the permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -45,12 +83,20 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
             }
         }else{
             updateSongs();
+            bindTheService();
+
         }
+    }
+
+    public void stopService(View view) {
+        Log.i(TAG,"stopService called");
+        mService.releaseResources();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        Log.i(TAG,"onStart called");
     }
 
     @Override
@@ -60,6 +106,7 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.i(TAG, "onRequestPermissionResult called");
                     updateSongs();
+                    bindTheService();
                 }
             }
         }
@@ -69,6 +116,12 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         songList = MediaLibrary.getData(SongsActivity.this);
         Log.i(TAG,"songsList" + songList.size());
         adapter.dataChanged(songList);
+    }
+
+    private void bindTheService() {
+        Intent serviceIntent = new Intent(this.getApplicationContext(),MediaPlaybackService.class);
+//        startService(serviceIntent);
+        bindService(serviceIntent,mServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -87,10 +140,10 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
 
         switch (item.getItemId()) {
             case R.id.action_shuffle:
-                break;
+                return true;
             case R.id.action_end:
                 System.exit(0);
-                break;
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -100,34 +153,42 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
     @Override
     protected void onResume(){
         super.onResume();
-
+        Log.i(TAG,"onResume called");
     }
 
     @Override
     protected void onPause(){
         super.onPause();
+        Log.i(TAG,"onPause called");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        Log.i(TAG,"onStop called");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.i(TAG,"onDestroy called");
+        // it automatically unbinds and onDestroy gets called
+            unbindService(mServiceConnection);
+        mBound = false;
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-//        moveTaskToBack(true);
+        Log.i(TAG,"onBackPressed called");
+        moveTaskToBack(true);
     }
     @Override
     public void onClick(Song song) {
-        Intent intent = new Intent(this,MediaPlayerActivity.class);
-        intent.putExtra(MediaPlayerActivity.EXTRA_SONG,song);
-        startActivity(intent);
+//        Intent intent = new Intent(this,MediaPlayerActivity.class);
+//        intent.putExtra(MediaPlayerActivity.EXTRA_SONG,song);
+//        startActivity(intent);
+        Toast.makeText(this, song.getTitle(), Toast.LENGTH_SHORT).show();
     }
 
 }
