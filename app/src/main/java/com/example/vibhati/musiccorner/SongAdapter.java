@@ -19,7 +19,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
 
     public interface ClickListener{
-        public void onClick(Song song);
+        public void onClick(Song song, int position);
     }
 
     public SongAdapter(Context mContext, List<Song> mCursor, ClickListener mClickListener) {
@@ -38,7 +38,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SongViewHolder songViewHolder, int position) {
+    public void onBindViewHolder(@NonNull SongViewHolder songViewHolder, final int position) {
         final Song song = mCursor.get(position);
         songViewHolder.titleTextView.setText(song.getTitle());
         songViewHolder.artistTextView.setText(song.getArtist());
@@ -47,7 +47,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         songViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mClickListener.onClick(song);
+                mClickListener.onClick(song,position);
             }
         });
     }

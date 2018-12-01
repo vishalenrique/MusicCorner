@@ -129,6 +129,16 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
 //        editor.apply();
     }
 
+    public void previousSong(View view) {
+        Log.i(TAG,"previousSong");
+        mService.previousSong();
+    }
+
+    public void nextSong(View view) {
+        Log.i(TAG,"nextSong");
+        mService.nextSong();
+    }
+
     public void stopService(View view) {
 
         // Stop Method
@@ -240,7 +250,7 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         moveTaskToBack(true);
     }
     @Override
-    public void onClick(Song song) {
+    public void onClick(Song song, int position) {
 //        Intent intent = new Intent(this,MediaPlayerActivity.class);
 //        intent.putExtra(MediaPlayerActivity.EXTRA_SONG,song);
 //        startActivity(intent);
@@ -255,6 +265,7 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString("key", trackUri.toString());
+            editor.putInt("position",position);
             editor.apply();
             mPlay.setText("Pause");
             Toast.makeText(this, song.getTitle(), Toast.LENGTH_SHORT).show();

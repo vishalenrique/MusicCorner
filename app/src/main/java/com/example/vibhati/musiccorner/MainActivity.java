@@ -255,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    public void onClick(Song song) {
+    public void onClick(Song song, int position) {
 
         //undo this
 
@@ -372,5 +372,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     public void pauseService(View view) {
+    }
+
+    public void previousSong(View view) {
+    }
+
+    public void nextSong(View view) {
     }
 }

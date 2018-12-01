@@ -1,6 +1,7 @@
 package com.example.vibhati.musiccorner;
 
 import android.app.Service;
+import android.content.ContentUris;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -26,6 +27,7 @@ public class MediaPlaybackService extends Service implements MediaPlayer.OnPrepa
     private SharedPreferences mDefaultSharedPreferences;
     private boolean mIsPlaying =false;
     private String mDefaultValueInPrepare = "defaultValueInPrepare";;
+    private int mPosition;
 
     @Override
     public void onCreate() {
@@ -80,22 +82,44 @@ public class MediaPlaybackService extends Service implements MediaPlayer.OnPrepa
     }
 
     void prepare(){
-        String trackUriString = mDefaultSharedPreferences.getString("key", mDefaultValueInPrepare);
-        if(TextUtils.equals(trackUriString,mDefaultValueInPrepare)){
+        mPosition = mDefaultSharedPreferences.getInt("position", -1);
+        if(mPosition == -1) {
             Log.i(TAG,"Select a song to play");
-        } else {
-            if (mMediaPlayer.isPlaying()) {
-                mMediaPlayer.stop();
+        }else{
+            Song playSong = mSongList.get(mPosition);
+            //get id
+            long currSong = playSong.getId();
+            //set uri
+            Uri trackUri = ContentUris.withAppendedId(
+                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    currSong);
+                if (mMediaPlayer.isPlaying()) {
+                    mMediaPlayer.stop();
+                }
+                mMediaPlayer.reset();
+                try {
+                    mMediaPlayer.setDataSource(getApplicationContext(), trackUri);
+                } catch (Exception e) {
+                    Log.e("MUSIC SERVICE", "Error setting data source", e);
+                }
+                mMediaPlayer.prepareAsync();
             }
-            mMediaPlayer.reset();
-            Uri trackUri = Uri.parse(trackUriString);
-            try {
-                mMediaPlayer.setDataSource(getApplicationContext(), trackUri);
-            } catch (Exception e) {
-                Log.e("MUSIC SERVICE", "Error setting data source", e);
-            }
-            mMediaPlayer.prepareAsync();
-        }
+//        String trackUriString = mDefaultSharedPreferences.getString("key", mDefaultValueInPrepare);
+//        if(TextUtils.equals(trackUriString,mDefaultValueInPrepare)){
+//            Log.i(TAG,"Select a song to play");
+//        } else {
+//            if (mMediaPlayer.isPlaying()) {
+//                mMediaPlayer.stop();
+//            }
+//            mMediaPlayer.reset();
+//            Uri trackUri = Uri.parse(trackUriString);
+//            try {
+//                mMediaPlayer.setDataSource(getApplicationContext(), trackUri);
+//            } catch (Exception e) {
+//                Log.e("MUSIC SERVICE", "Error setting data source", e);
+//            }
+//            mMediaPlayer.prepareAsync();
+//        }
     }
 
     @Override
@@ -125,6 +149,26 @@ public class MediaPlaybackService extends Service implements MediaPlayer.OnPrepa
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if(key.equals("key")) {
             Log.i(TAG, "onSharedPreferenceChanged called: " + sharedPreferences.getString(key, "defaultValue"));
+        }
+    }
+
+    public void previousSong() {
+        if(mPosition >= 0) {
+            SharedPreferences.Editor editor = mDefaultSharedPreferences.edit();
+            editor.putInt("position", --mPosition);
+            editor.commit();
+            prepare();
+        }
+
+    }
+
+    public void nextSong() {
+        if(mPosition == mSongList.size()) {
+        }else{
+            SharedPreferences.Editor editor = mDefaultSharedPreferences.edit();
+            editor.putInt("position", ++mPosition);
+            editor.commit();
+            prepare();
         }
     }
 
