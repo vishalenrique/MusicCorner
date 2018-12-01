@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,7 +28,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class SongsActivity extends AppCompatActivity implements SongAdapter.ClickListener{
+public class SongsActivity extends AppCompatActivity implements SongAdapter.ClickListener,SharedPreferences.OnSharedPreferenceChangeListener{
 
     ArrayList<Song> songList;
     private static final int MY_PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 1;
@@ -54,6 +55,8 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
             mBound = false;
         }
     };
+    private SharedPreferences mDefaultSharedPreferences;
+    private boolean mIsCurrentlyPlaying;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,15 +73,32 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
 
-        // Here
         mPlay = findViewById(R.id.play_pause_main);
+
+        //get Current state of the play button
+        mDefaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        mIsCurrentlyPlaying = mDefaultSharedPreferences.getBoolean("isPlaying", false);
+
+        if(mIsCurrentlyPlaying){
+            mPlay.setText("Pause");
+        }else{
+            mPlay.setText("Play");
+        }
+
+        // Here
         mPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //Play method
                 if(mBound){
-                    mService.showLogs();
-                    mService.playMusic();
+                    if(TextUtils.equals(mPlay.getText().toString(),"Play")) {
+                        mService.showLogs();
+                        mService.playMusic();
+                        mPlay.setText("Pause");
+                    }else{
+                        mService.pauseMusic();
+                        mPlay.setText("Play");
+                    }
                 }
             }
         });
@@ -93,6 +113,8 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
             bindTheService();
 
         }
+
+        mDefaultSharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
 
@@ -130,6 +152,7 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         super.onStart();
         Log.i(TAG,"onStart called");
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -207,6 +230,7 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         // it automatically unbinds and onDestroy gets called
             unbindService(mServiceConnection);
         mBound = false;
+        mDefaultSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -232,6 +256,7 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString("key", trackUri.toString());
             editor.apply();
+            mPlay.setText("Pause");
             Toast.makeText(this, song.getTitle(), Toast.LENGTH_SHORT).show();
             mService.playMusic();
         }else{
@@ -239,4 +264,14 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         }
     }
 
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if(key.equals("isPlaying")){
+            if(sharedPreferences.getBoolean(key,false)){
+                mPlay.setText("Pause");
+            }else{
+                mPlay.setText("Play");
+            }
+        }
+    }
 }

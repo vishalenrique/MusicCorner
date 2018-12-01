@@ -1,7 +1,6 @@
 package com.example.vibhati.musiccorner;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -49,6 +48,7 @@ public class MediaPlaybackService extends Service implements MediaPlayer.OnPrepa
         if (!mMediaPlayer.isPlaying()) {
             if (mIsReady) {
                 mMediaPlayer.start();
+                updatePlayingStateToSharedPreference(true);
             } else {
                 prepare();
             }
@@ -57,15 +57,23 @@ public class MediaPlaybackService extends Service implements MediaPlayer.OnPrepa
         }
     }
 
+    private void updatePlayingStateToSharedPreference(boolean state) {
+        SharedPreferences.Editor editor = mDefaultSharedPreferences.edit();
+        editor.putBoolean("isPlaying",state);
+        editor.apply();
+    }
+
     void pauseMusic(){
         if(mMediaPlayer.isPlaying()){
             mMediaPlayer.pause();
+            updatePlayingStateToSharedPreference(false);
         }
     }
 
     void stopMusic(){
         if(mMediaPlayer.isPlaying()){
             mMediaPlayer.stop();
+            updatePlayingStateToSharedPreference(false);
         }
         mMediaPlayer.reset();
         mIsReady = false;
@@ -115,7 +123,9 @@ public class MediaPlaybackService extends Service implements MediaPlayer.OnPrepa
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        Log.i(TAG,"onSharedPreferenceChanged called: " +  sharedPreferences.getString(key,"defaultValue"));
+        if(key.equals("key")) {
+            Log.i(TAG, "onSharedPreferenceChanged called: " + sharedPreferences.getString(key, "defaultValue"));
+        }
     }
 
     class LocalBinder extends Binder{

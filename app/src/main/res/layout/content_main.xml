@@ -31,8 +31,7 @@
             android:id="@+id/play_pause_main"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Play" />
+            android:layout_gravity="center" />
 
         <Button
             android:layout_width="wrap_content"
