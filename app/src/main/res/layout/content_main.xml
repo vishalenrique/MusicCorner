@@ -32,14 +32,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Click Me !!" />
+            android:text="Play" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:onClick="stopService"
-            android:text="Stop service" />
+            android:text="Stop" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center"
+            android:onClick="pauseService"
+            android:text="Pause" />
 
     </FrameLayout>
 

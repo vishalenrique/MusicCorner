@@ -370,4 +370,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     public void stopService(View view) {
     }
+
+    public void pauseService(View view) {
+    }
 }

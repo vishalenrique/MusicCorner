@@ -2,13 +2,17 @@ package com.example.vibhati.musiccorner;
 
 import android.Manifest;
 import android.content.ComponentName;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -32,7 +36,7 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
     private SongAdapter adapter;
 
     // Here
-    Button mPlayPause;
+    Button mPlay;
     private MediaPlaybackService mService;
     private boolean mBound = false;
 
@@ -42,6 +46,7 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
             MediaPlaybackService.LocalBinder localBinder = (MediaPlaybackService.LocalBinder) service;
             mService = localBinder.getService();
             mBound = true;
+            mService.setSongs(songList);
         }
 
         @Override
@@ -66,12 +71,14 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         recyclerView.setAdapter(adapter);
 
         // Here
-        mPlayPause = findViewById(R.id.play_pause_main);
-        mPlayPause.setOnClickListener(new View.OnClickListener() {
+        mPlay = findViewById(R.id.play_pause_main);
+        mPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //Play method
                 if(mBound){
                     mService.showLogs();
+                    mService.playMusic();
                 }
             }
         });
@@ -88,9 +95,34 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         }
     }
 
+
+    public void pauseService(View view) {
+        // pause
+        if(mBound){
+            mService.pauseMusic();
+        }
+//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+//        SharedPreferences.Editor editor = sharedPreferences.edit();
+//        editor.putString("key","value");
+//        editor.apply();
+    }
+
     public void stopService(View view) {
+
+        // Stop Method
+        if(mBound){
+            mService.stopMusic();
+        }
+
         Log.i(TAG,"stopService called");
-        mService.releaseResources();
+        //mService.releaseResources();
+
+//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+//        SharedPreferences.Editor editor = sharedPreferences.edit();
+//        editor.putString("key","newValue");
+//        editor.apply();
+
+
     }
 
     @Override
@@ -188,7 +220,23 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
 //        Intent intent = new Intent(this,MediaPlayerActivity.class);
 //        intent.putExtra(MediaPlayerActivity.EXTRA_SONG,song);
 //        startActivity(intent);
-        Toast.makeText(this, song.getTitle(), Toast.LENGTH_SHORT).show();
+        if(mBound) {
+            //get id
+            long currSong = song.getId();
+            //set uri
+            Uri trackUri = ContentUris.withAppendedId(
+                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    currSong);
+
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("key", trackUri.toString());
+            editor.apply();
+            Toast.makeText(this, song.getTitle(), Toast.LENGTH_SHORT).show();
+            mService.playMusic();
+        }else{
+            Toast.makeText(this, "Service is not connected, mBound: "+mBound, Toast.LENGTH_SHORT).show();
+        }
     }
 
 }

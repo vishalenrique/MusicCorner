@@ -4,23 +4,90 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 
-public class MediaPlaybackService extends Service {
+import java.util.ArrayList;
+
+public class MediaPlaybackService extends Service implements MediaPlayer.OnPreparedListener,SharedPreferences.OnSharedPreferenceChangeListener {
 
     private LocalBinder mLocalBinder = new LocalBinder();
     private static final String TAG = "MediaPlaybackService";
     private static int mThreadId;
+    private MediaPlayer mMediaPlayer;
+    private boolean mIsReady = false;
+    private ArrayList<Song> mSongList;
+    private SharedPreferences mDefaultSharedPreferences;
+    private boolean mIsPlaying =false;
+    private String mDefaultValueInPrepare = "defaultValueInPrepare";;
 
     @Override
     public void onCreate() {
         super.onCreate();
         Log.i(TAG,"onCreate called: " + String.valueOf(mThreadId));
         startService(new Intent(this.getApplicationContext(),MediaPlaybackService.class));
+        mMediaPlayer = new MediaPlayer();
+        mMediaPlayer.setOnPreparedListener(this);
+        mDefaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        mDefaultSharedPreferences.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onPrepared(MediaPlayer mp) {
+        mIsReady = true;
+        playMusic();
+    }
+
+    void playMusic() {
+        if (!mMediaPlayer.isPlaying()) {
+            if (mIsReady) {
+                mMediaPlayer.start();
+            } else {
+                prepare();
+            }
+        } else{
+            prepare();
+        }
+    }
+
+    void pauseMusic(){
+        if(mMediaPlayer.isPlaying()){
+            mMediaPlayer.pause();
+        }
+    }
+
+    void stopMusic(){
+        if(mMediaPlayer.isPlaying()){
+            mMediaPlayer.stop();
+        }
+        mMediaPlayer.reset();
+        mIsReady = false;
+    }
+
+    void prepare(){
+        String trackUriString = mDefaultSharedPreferences.getString("key", mDefaultValueInPrepare);
+        if(TextUtils.equals(trackUriString,mDefaultValueInPrepare)){
+            Log.i(TAG,"Select a song to play");
+        } else {
+            if (mMediaPlayer.isPlaying()) {
+                mMediaPlayer.stop();
+            }
+            mMediaPlayer.reset();
+            Uri trackUri = Uri.parse(trackUriString);
+            try {
+                mMediaPlayer.setDataSource(getApplicationContext(), trackUri);
+            } catch (Exception e) {
+                Log.e("MUSIC SERVICE", "Error setting data source", e);
+            }
+            mMediaPlayer.prepareAsync();
+        }
     }
 
     @Override
@@ -42,6 +109,15 @@ public class MediaPlaybackService extends Service {
         stopSelf(mThreadId);
     }
 
+    public void setSongs(ArrayList<Song> songList) {
+        mSongList = songList;
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        Log.i(TAG,"onSharedPreferenceChanged called: " +  sharedPreferences.getString(key,"defaultValue"));
+    }
+
     class LocalBinder extends Binder{
        MediaPlaybackService getService(){
             return  MediaPlaybackService.this;
@@ -57,7 +133,10 @@ public class MediaPlaybackService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        defaultSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
         Log.i(TAG,"onDestroy called: " + String.valueOf(mThreadId));
+
     }
 
     public void showLogs(){
