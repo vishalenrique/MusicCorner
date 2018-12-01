@@ -1,13 +1,20 @@
 package com.example.vibhati.musiccorner;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -28,6 +35,36 @@ public class MediaPlaybackService extends Service implements MediaPlayer.OnPrepa
     private boolean mIsPlaying =false;
     private String mDefaultValueInPrepare = "defaultValueInPrepare";;
     private int mPosition;
+    private AudioFocusRequest audioFocusRequest;
+    private AudioManager.OnAudioFocusChangeListener afChangeListener = new AudioManager.OnAudioFocusChangeListener() {
+        @Override
+        public void onAudioFocusChange(int focusChange) {
+            switch (focusChange){
+                case AudioManager.AUDIOFOCUS_LOSS:
+                    stopMusic();
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                    pauseMusic();
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                    pauseMusic();
+                    break;
+                case AudioManager.AUDIOFOCUS_GAIN:
+                    playMusic();
+                    break;
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
+                    stopMusic();
+                    break;
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
+                    stopMusic();
+                    break;
+            }
+        }
+    };
+
+    private IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+    private BecomingNoisyReceiver myNoisyAudioStreamReceiver = new BecomingNoisyReceiver();
+
 
     @Override
     public void onCreate() {
@@ -47,15 +84,40 @@ public class MediaPlaybackService extends Service implements MediaPlayer.OnPrepa
     }
 
     void playMusic() {
-        if (!mMediaPlayer.isPlaying()) {
-            if (mIsReady) {
-                mMediaPlayer.start();
-                updatePlayingStateToSharedPreference(true);
+        AudioManager am = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        // Request audio focus for playback, this registers the afChangeListener
+        AudioAttributes attrs = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            attrs = new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build();
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            audioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                    .setOnAudioFocusChangeListener(afChangeListener)
+                    .setAudioAttributes(attrs)
+                    .setAcceptsDelayedFocusGain(true)
+                    .build();
+        }
+        int result = 0;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            result = am.requestAudioFocus(audioFocusRequest);
+        }else {
+            result = am.requestAudioFocus(afChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+        }
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+
+            if (!mMediaPlayer.isPlaying()) {
+                if (mIsReady) {
+                    registerReceiver(myNoisyAudioStreamReceiver, intentFilter);
+                    mMediaPlayer.start();
+                    updatePlayingStateToSharedPreference(true);
+                } else {
+                    prepare();
+                }
             } else {
                 prepare();
             }
-        } else{
-            prepare();
         }
     }
 
@@ -69,16 +131,25 @@ public class MediaPlaybackService extends Service implements MediaPlayer.OnPrepa
         if(mMediaPlayer.isPlaying()){
             mMediaPlayer.pause();
             updatePlayingStateToSharedPreference(false);
+            unregisterReceiver(myNoisyAudioStreamReceiver);
         }
     }
 
     void stopMusic(){
+        AudioManager am = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        // Abandon audio focus
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            am.abandonAudioFocusRequest(audioFocusRequest);
+        }else{
+            am.abandonAudioFocus(afChangeListener);
+        }
         if(mMediaPlayer.isPlaying()){
             mMediaPlayer.stop();
             updatePlayingStateToSharedPreference(false);
         }
         mMediaPlayer.reset();
         mIsReady = false;
+        unregisterReceiver(myNoisyAudioStreamReceiver);
     }
 
     void prepare(){
@@ -195,5 +266,14 @@ public class MediaPlaybackService extends Service implements MediaPlayer.OnPrepa
 
     public void showLogs(){
         Log.i(TAG,"showLogs called: " + String.valueOf(mThreadId));
+    }
+
+    public class BecomingNoisyReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) {
+              pauseMusic();
+            }
+        }
     }
 }
