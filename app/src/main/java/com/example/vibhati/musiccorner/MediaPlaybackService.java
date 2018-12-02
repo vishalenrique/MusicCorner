@@ -116,14 +116,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
         @Override
         public void onSkipToPrevious() {
-//            previousSong();
+            previousSong();
             Log.i(TAG, "onSkipToPrevious called");
 
         }
 
         @Override
         public void onSkipToNext() {
-//            nextSong();
+           nextSong();
             Log.i(TAG, "onSkipToNext called");
         }
     };
@@ -210,6 +210,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
     }
 
     void playMusic() {
+        startService(new Intent(getApplicationContext(),MediaPlaybackService.class));
         prepare();
     }
 
@@ -232,6 +233,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             am.abandonAudioFocus(afChangeListener);
         }
         mMediaSession.setActive(false);
+        stopSelf();
         mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_STOPPED, mMediaPlayer.getCurrentPosition(), 0);
         mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
 //        unregisterReceiver(myNoisyAudioStreamReceiver);
@@ -315,26 +317,25 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
     }
 
     public void previousSong() {
-        if (mPosition >= 0) {
+        if (mPosition > 0) {
             SharedPreferences.Editor editor = mDefaultSharedPreferences.edit();
             editor.putInt("position", --mPosition);
             editor.commit();
             mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS, mMediaPlayer.getCurrentPosition(), 0);
             mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
-            prepare();
+            playMusic();
         }
 
     }
 
     public void nextSong() {
-        if (mPosition == mSongList.size()) {
-        } else {
+        if (mPosition < (mSongList.size()-1)) {
             SharedPreferences.Editor editor = mDefaultSharedPreferences.edit();
             editor.putInt("position", ++mPosition);
             editor.commit();
             mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT, mMediaPlayer.getCurrentPosition(), 0);
             mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
-            prepare();
+            playMusic();
         }
     }
 
