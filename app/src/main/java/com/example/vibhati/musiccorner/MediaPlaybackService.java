@@ -1,5 +1,6 @@
 package com.example.vibhati.musiccorner;
 
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ContentUris;
@@ -39,6 +40,7 @@ import java.util.List;
 public class MediaPlaybackService extends MediaBrowserServiceCompat implements MediaPlayer.OnPreparedListener {
 
     private static final int NOTIFICATION_ID = 234;
+    private static final int PENDING_INTENT_REQUEST_CODE = 32;
     private static String channelId = "channelId";
     private static final String TAG = "MediaPlaybackService";
     private MediaPlayer mMediaPlayer;
@@ -149,6 +151,15 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
                 PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS | PlaybackStateCompat.ACTION_SKIP_TO_NEXT);
 
         setSessionToken(mMediaSession.getSessionToken());
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+            mediaButtonIntent.setClass(this, MediaButtonReceiver.class);
+            mMediaSession.setMediaButtonReceiver(PendingIntent.getBroadcast(
+                    getApplicationContext(), PENDING_INTENT_REQUEST_CODE,
+                    mediaButtonIntent,
+                    0));
+        }
 
         mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
         mMediaPlayer = new MediaPlayer();

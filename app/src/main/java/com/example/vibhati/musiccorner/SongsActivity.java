@@ -21,6 +21,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -288,4 +289,22 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
             Toast.makeText(this, "Service is not connected", Toast.LENGTH_SHORT).show();
         }
     }
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event) {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            return super.onKeyDown(keyCode, event);
+//        }
+//        switch (keyCode) {
+//            case KeyEvent.KEYCODE_MEDIA_PLAY:
+//                MediaControllerCompat.getMediaController(SongsActivity.this).dispatchMediaButtonEvent(event);
+//                return true;
+//            case KeyEvent.KEYCODE_MEDIA_PAUSE:
+//                MediaControllerCompat.getMediaController(SongsActivity.this).dispatchMediaButtonEvent(event);
+//                return true;
+//            case KeyEvent.KEYCODE_MEDIA_STOP:
+//                MediaControllerCompat.getMediaController(SongsActivity.this).dispatchMediaButtonEvent(event);
+//                return true;
+//        }
+//        return super.onKeyDown(keyCode, event);
+//    }
 }
