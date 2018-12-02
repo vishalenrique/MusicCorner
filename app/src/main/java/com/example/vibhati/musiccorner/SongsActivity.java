@@ -46,17 +46,6 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
     // Here
     Button mPlay;
     private MediaBrowserCompat mMediaBrowser;
-    private MediaControllerCompat.Callback mControllerCallback = new MediaControllerCompat.Callback() {
-        @Override
-        public void onPlaybackStateChanged(PlaybackStateCompat state) {
-            super.onPlaybackStateChanged(state);
-        }
-
-        @Override
-        public void onMetadataChanged(MediaMetadataCompat metadata) {
-            super.onMetadataChanged(metadata);
-        }
-    };
     private MediaBrowserCompat.ConnectionCallback mConnectionCallbacks = new MediaBrowserCompat.ConnectionCallback (){
 
         @Override
@@ -124,6 +113,28 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         }
     }
 
+    private MediaControllerCompat.Callback mControllerCallback = new MediaControllerCompat.Callback() {
+        @Override
+        public void onPlaybackStateChanged(PlaybackStateCompat state) {
+            switch(state.getState()){
+                case PlaybackStateCompat.STATE_PLAYING:
+                    mPlay.setText("Pause");
+                    break;
+                case PlaybackStateCompat.STATE_PAUSED:
+                    mPlay.setText("Play");
+                    break;
+                case PlaybackStateCompat.STATE_STOPPED:
+                    mPlay.setText("Play");
+                    break;
+            }
+        }
+
+        @Override
+        public void onMetadataChanged(MediaMetadataCompat metadata) {
+            super.onMetadataChanged(metadata);
+        }
+    };
+
     private void buildTransportControls() {
         mPlay = findViewById(R.id.play_pause_main);
         updateSongs();
@@ -151,21 +162,12 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
                 if(mMediaBrowser.isConnected()){
                     if(TextUtils.equals(mPlay.getText().toString(),"Play")) {
                         MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().play();
-                        mPlay.setText("Pause");
                     }else{
                         MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().pause();
-                        mPlay.setText("Play");
                     }
                 }
             }
         });
-    }
-
-
-    public void pauseService(View view) {
-        if(mMediaBrowser.isConnected()){
-            MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().pause();
-        }
     }
 
     public void previousSong(View view) {
@@ -282,7 +284,6 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putInt("position",position);
             editor.apply();
-            mPlay.setText("Pause");
             Toast.makeText(this, song.getTitle(), Toast.LENGTH_SHORT).show();
             MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().play();
         }else{
