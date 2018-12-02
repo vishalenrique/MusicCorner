@@ -2,17 +2,11 @@ package com.example.vibhati.musiccorner;
 
 import android.Manifest;
 import android.content.ComponentName;
-import android.content.ContentUris;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -31,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -44,7 +39,8 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
     private SongAdapter adapter;
 
     // Here
-    Button mPlay;
+    Button mPlayPause;
+    TextView mSongTitle;
     private MediaBrowserCompat mMediaBrowser;
     private MediaBrowserCompat.ConnectionCallback mConnectionCallbacks = new MediaBrowserCompat.ConnectionCallback (){
 
@@ -118,25 +114,26 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         public void onPlaybackStateChanged(PlaybackStateCompat state) {
             switch(state.getState()){
                 case PlaybackStateCompat.STATE_PLAYING:
-                    mPlay.setText("Pause");
+                    mPlayPause.setText("Pause");
                     break;
                 case PlaybackStateCompat.STATE_PAUSED:
-                    mPlay.setText("Play");
+                    mPlayPause.setText("Play");
                     break;
                 case PlaybackStateCompat.STATE_STOPPED:
-                    mPlay.setText("Play");
+                    mPlayPause.setText("Play");
                     break;
             }
         }
 
         @Override
         public void onMetadataChanged(MediaMetadataCompat metadata) {
-            super.onMetadataChanged(metadata);
+            mSongTitle.setText(metadata.getDescription().getTitle());
         }
     };
 
     private void buildTransportControls() {
-        mPlay = findViewById(R.id.play_pause_main);
+        mPlayPause = findViewById(R.id.play_pause_main);
+        mSongTitle = findViewById(R.id.song_title_main);
         updateSongs();
 
         MediaControllerCompat mediaController = MediaControllerCompat.getMediaController(SongsActivity.this);
@@ -146,21 +143,22 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         PlaybackStateCompat pbState = mediaController.getPlaybackState();
 
         if( pbState.getState() != PlaybackStateCompat.STATE_PLAYING){
-            mPlay.setText("Play");
+            mPlayPause.setText("Play");
         }else{
-            mPlay.setText("Pause");
+            mPlayPause.setText("Pause");
         }
+        mSongTitle.setText(metadata.getDescription().getTitle());
 
         // Register a Callback to stay in sync
         mediaController.registerCallback(mControllerCallback);
 
         // Here
-        mPlay.setOnClickListener(new View.OnClickListener() {
+        mPlayPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //Play method
                 if(mMediaBrowser.isConnected()){
-                    if(TextUtils.equals(mPlay.getText().toString(),"Play")) {
+                    if(TextUtils.equals(mPlayPause.getText().toString(),"Play")) {
                         MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().play();
                     }else{
                         MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().pause();

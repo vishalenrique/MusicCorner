@@ -154,8 +154,19 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setOnPreparedListener(this);
         mDefaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        mMediaMetadataCompatBuilder = new MediaMetadataCompat.Builder();
+
         mSongList = MediaLibrary.getData(getApplicationContext());
+
+        mMediaMetadataCompatBuilder = new MediaMetadataCompat.Builder();
+
+        mPosition = mDefaultSharedPreferences.getInt("position", 0);
+
+        Song playSong = mSongList.get(mPosition);
+
+        mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, playSong.getTitle());
+        mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, playSong.getArtist());
+        mMediaSession.setMetadata(mMediaMetadataCompatBuilder.build());
+
         Log.i(TAG, "onCreate called: end ");
     }
 
