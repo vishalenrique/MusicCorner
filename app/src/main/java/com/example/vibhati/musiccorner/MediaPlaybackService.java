@@ -229,38 +229,49 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
     }
 
     void prepare() {
-        mPosition = mDefaultSharedPreferences.getInt("position", 0);
+        if(mMediaSession.getController().getPlaybackState().getState() == PlaybackStateCompat.STATE_PAUSED){
+            mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_PLAYING, mMediaPlayer.getCurrentPosition(), 1.0f);
+            mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
 
-        Song playSong = mSongList.get(mPosition);
+            startForeground(NOTIFICATION_ID, from(getApplicationContext(), mMediaSession).build());
 
-        mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, playSong.getTitle());
-        mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, playSong.getArtist());
-        //get id
-        long currSong = playSong.getId();
-        //set uri
-        Uri trackUri = ContentUris.withAppendedId(
-                android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                currSong);
-        mMediaPlayer.stop();
-        mMediaPlayer.reset();
-        try {
-            mMediaPlayer.setDataSource(getApplicationContext(), trackUri);
-        } catch (Exception e) {
-            Log.e("MUSIC SERVICE", "Error setting data source", e);
+            registerReceiver(myNoisyAudioStreamReceiver, intentFilter);
+
+            mMediaPlayer.start();
+        }else {
+            mPosition = mDefaultSharedPreferences.getInt("position", 0);
+
+            Song playSong = mSongList.get(mPosition);
+
+            mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, playSong.getTitle());
+            mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, playSong.getArtist());
+            //get id
+            long currSong = playSong.getId();
+            //set uri
+            Uri trackUri = ContentUris.withAppendedId(
+                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    currSong);
+            mMediaPlayer.stop();
+            mMediaPlayer.reset();
+            try {
+                mMediaPlayer.setDataSource(getApplicationContext(), trackUri);
+            } catch (Exception e) {
+                Log.e("MUSIC SERVICE", "Error setting data source", e);
+            }
+
+            mMediaSession.setMetadata(mMediaMetadataCompatBuilder.build());
+
+            mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_PLAYING, mMediaPlayer.getCurrentPosition(), 1.0f);
+            mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
+
+            mMediaSession.setActive(true);
+
+            startForeground(NOTIFICATION_ID, from(getApplicationContext(), mMediaSession).build());
+
+            registerReceiver(myNoisyAudioStreamReceiver, intentFilter);
+
+            mMediaPlayer.prepareAsync();
         }
-
-        mMediaSession.setMetadata(mMediaMetadataCompatBuilder.build());
-
-        mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_PLAYING, mMediaPlayer.getCurrentPosition(), 1.0f);
-        mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
-
-        mMediaSession.setActive(true);
-
-        startForeground(NOTIFICATION_ID, from(getApplicationContext(), mMediaSession).build());
-
-        registerReceiver(myNoisyAudioStreamReceiver, intentFilter);
-
-        mMediaPlayer.prepareAsync();
     }
 
     @Override
