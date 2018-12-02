@@ -8,12 +8,19 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -38,25 +45,71 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
 
     // Here
     Button mPlay;
-    private MediaPlaybackService mService;
     private boolean mBound = false;
-
-    ServiceConnection mServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            MediaPlaybackService.LocalBinder localBinder = (MediaPlaybackService.LocalBinder) service;
-            mService = localBinder.getService();
-            mBound = true;
-            mService.setSongs(songList);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mBound = false;
-        }
-    };
     private SharedPreferences mDefaultSharedPreferences;
     private boolean mIsCurrentlyPlaying;
+    private MediaBrowserCompat mMediaBrowser;
+    private MediaControllerCompat.Callback mControllerCallback = new MediaControllerCompat.Callback() {
+        @Override
+        public void onPlaybackStateChanged(PlaybackStateCompat state) {
+            super.onPlaybackStateChanged(state);
+        }
+
+        @Override
+        public void onMetadataChanged(MediaMetadataCompat metadata) {
+            super.onMetadataChanged(metadata);
+        }
+    };
+    private MediaBrowserCompat.ConnectionCallback mConnectionCallbacks = new MediaBrowserCompat.ConnectionCallback (){
+
+        @Override
+        public void onConnected() {
+            Log.i(TAG,"onConnected entered");
+
+            mBound = true;
+
+            // Get the token for the MediaSession
+            MediaSessionCompat.Token token = mMediaBrowser.getSessionToken();
+
+            // Create a MediaControllerCompat
+            MediaControllerCompat mediaController =
+                    null;
+            try {
+                mediaController = new MediaControllerCompat(SongsActivity.this, // Context
+                        token);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+
+            // Save the controller
+            MediaControllerCompat.setMediaController(SongsActivity.this, mediaController);
+
+            // app scenario -- to directly play as soon as it enters the activity
+//                    MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().play();
+
+
+           // MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().playFromMediaId(String.valueOf(mCurrentSong.getId()),null);
+
+            // Finish building the UI
+           //  buildTransportControls();
+
+//            MediaControllerCompat mediaController = MediaControllerCompat.getMediaController(MediaPlayerActivity.this);
+
+            buildTransportControls();
+
+            Log.i(TAG,"onConnected entered");
+        }
+
+        @Override
+        public void onConnectionSuspended() {
+            super.onConnectionSuspended();
+        }
+
+        @Override
+        public void onConnectionFailed() {
+            super.onConnectionFailed();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,8 +117,28 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        Log.i(TAG,"onCreate called");
+        //Log.i(TAG,"onCreate called");
 
+        //get the permission
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
+            }
+        }else{
+           // updateSongs();
+            //bindTheService();
+            Log.i(TAG,"onCreate called..........");
+            mMediaBrowser = new MediaBrowserCompat(this,
+                    new ComponentName(this, MediaPlaybackService.class),
+                    mConnectionCallbacks,
+                    null);
+            mMediaBrowser.connect();
+        }
+
+       // mDefaultSharedPreferences.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    private void buildTransportControls() {
         recyclerView = findViewById(R.id.rv_main);
         songList = new ArrayList<>();
         adapter = new SongAdapter(this, null, this);
@@ -74,6 +147,8 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         recyclerView.setAdapter(adapter);
 
         mPlay = findViewById(R.id.play_pause_main);
+
+        updateSongs();
 
         //get Current state of the play button
         mDefaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -92,36 +167,36 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
                 //Play method
                 if(mBound){
                     if(TextUtils.equals(mPlay.getText().toString(),"Play")) {
-                        mService.showLogs();
-                        mService.playMusic();
+//                        mService.showLogs();
+//                        mService.playMusic();
+                        MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().play();
                         mPlay.setText("Pause");
                     }else{
-                        mService.pauseMusic();
+//                        mService.pauseMusic();
+                        MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().pause();
                         mPlay.setText("Play");
                     }
                 }
             }
         });
 
-        //get the permission
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
-            }
-        }else{
-            updateSongs();
-            bindTheService();
+        MediaControllerCompat mediaController = MediaControllerCompat.getMediaController(SongsActivity.this);
 
-        }
 
-        mDefaultSharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        // Display the initial state
+        MediaMetadataCompat metadata = mediaController.getMetadata();
+        PlaybackStateCompat pbState = mediaController.getPlaybackState();
+
+        // Register a Callback to stay in sync
+        mediaController.registerCallback(mControllerCallback);
     }
 
 
     public void pauseService(View view) {
         // pause
         if(mBound){
-            mService.pauseMusic();
+//            mService.pauseMusic();
+            MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().pause();
         }
 //        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 //        SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -131,19 +206,22 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
 
     public void previousSong(View view) {
         Log.i(TAG,"previousSong");
-        mService.previousSong();
+//        mService.previousSong();
+        MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().skipToPrevious();
     }
 
     public void nextSong(View view) {
         Log.i(TAG,"nextSong");
-        mService.nextSong();
+//        mService.nextSong();
+        MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().skipToNext();
     }
 
     public void stopService(View view) {
 
         // Stop Method
         if(mBound){
-            mService.stopMusic();
+//            mService.stopMusic();
+            MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().stop();
         }
 
         Log.i(TAG,"stopService called");
@@ -171,7 +249,7 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.i(TAG, "onRequestPermissionResult called");
                     updateSongs();
-                    bindTheService();
+                    //bindTheService();
                 }
             }
         }
@@ -181,12 +259,6 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         songList = MediaLibrary.getData(SongsActivity.this);
         Log.i(TAG,"songsList" + songList.size());
         adapter.dataChanged(songList);
-    }
-
-    private void bindTheService() {
-        Intent serviceIntent = new Intent(this.getApplicationContext(),MediaPlaybackService.class);
-//        startService(serviceIntent);
-        bindService(serviceIntent,mServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -219,6 +291,7 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
     protected void onResume(){
         super.onResume();
         Log.i(TAG,"onResume called");
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     @Override
@@ -238,7 +311,11 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         super.onDestroy();
         Log.i(TAG,"onDestroy called");
         // it automatically unbinds and onDestroy gets called
-            unbindService(mServiceConnection);
+//            unbindService(mServiceConnection);
+        if (MediaControllerCompat.getMediaController(SongsActivity.this) != null) {
+            MediaControllerCompat.getMediaController(SongsActivity.this).unregisterCallback(mControllerCallback);
+        }
+            mMediaBrowser.disconnect();
         mBound = false;
         mDefaultSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
@@ -256,20 +333,21 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
 //        startActivity(intent);
         if(mBound) {
             //get id
-            long currSong = song.getId();
-            //set uri
-            Uri trackUri = ContentUris.withAppendedId(
-                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    currSong);
-
+//            long currSong = song.getId();
+//            //set uri
+//            Uri trackUri = ContentUris.withAppendedId(
+//                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+//                    currSong);
+//
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString("key", trackUri.toString());
+//            editor.putString("key", trackUri.toString());
             editor.putInt("position",position);
             editor.apply();
             mPlay.setText("Pause");
             Toast.makeText(this, song.getTitle(), Toast.LENGTH_SHORT).show();
-            mService.playMusic();
+//            mService.playMusic();
+            MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().play();
         }else{
             Toast.makeText(this, "Service is not connected, mBound: "+mBound, Toast.LENGTH_SHORT).show();
         }
