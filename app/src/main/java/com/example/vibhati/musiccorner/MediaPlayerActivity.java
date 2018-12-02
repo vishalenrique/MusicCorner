@@ -22,7 +22,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.example.vibhati.musiccorner.MediaPlaybackService.LocalBinder;
+//import com.example.vibhati.musiccorner.MediaPlaybackService.LocalBinder;
 
 public class MediaPlayerActivity extends AppCompatActivity {
 
@@ -36,8 +36,8 @@ public class MediaPlayerActivity extends AppCompatActivity {
     ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            LocalBinder localBinder = (LocalBinder) service;
-            mService = localBinder.getService();
+//            LocalBinder localBinder = (LocalBinder) service;
+//            mService = localBinder.getService();
             mBound = true;
         }
 

@@ -36,15 +36,12 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MediaPlaybackService extends MediaBrowserServiceCompat implements MediaPlayer.OnPreparedListener, SharedPreferences.OnSharedPreferenceChangeListener {
+public class MediaPlaybackService extends MediaBrowserServiceCompat implements MediaPlayer.OnPreparedListener {
 
     private static final int NOTIFICATION_ID = 234;
     private static String channelId = "channelId";
-    private LocalBinder mLocalBinder = new LocalBinder();
     private static final String TAG = "MediaPlaybackService";
-    private static int mThreadId;
     private MediaPlayer mMediaPlayer;
-    private boolean mIsReady = false;
     private ArrayList<Song> mSongList;
     private SharedPreferences mDefaultSharedPreferences;
     private boolean mIsPlaying = false;
@@ -68,12 +65,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
                 case AudioManager.AUDIOFOCUS_GAIN:
                     playMusic();
                     break;
-                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
-                    stopMusic();
-                    break;
-                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
-                    stopMusic();
-                    break;
             }
         }
     };
@@ -84,56 +75,56 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
     private MediaSessionCompat.Callback mCallback = new MediaSessionCompat.Callback() {
         @Override
         public void onPlay() {
-//            AudioManager am = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
-//            // Request audio focus for playback, this registers the afChangeListener
-//            AudioAttributes attrs = null;
-//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-//                attrs = new AudioAttributes.Builder()
-//                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-//                        .build();
-//            }
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                audioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-//                        .setOnAudioFocusChangeListener(afChangeListener)
-//                        .setAudioAttributes(attrs)
-//                        .setAcceptsDelayedFocusGain(true)
-//                        .build();
-//            }
-//            int result = 0;
-//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-//                result = am.requestAudioFocus(audioFocusRequest);
-//            } else {
-//                result = am.requestAudioFocus(afChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-//            }
-//            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-//                playMusic();
-//            }
-            Log.i(TAG,"onPlay called");
+            AudioManager am = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+            // Request audio focus for playback, this registers the afChangeListener
+            AudioAttributes attrs = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                attrs = new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build();
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                audioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                        .setOnAudioFocusChangeListener(afChangeListener)
+                        .setAudioAttributes(attrs)
+                        .setAcceptsDelayedFocusGain(true)
+                        .build();
+            }
+            int result = 0;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                result = am.requestAudioFocus(audioFocusRequest);
+            } else {
+                result = am.requestAudioFocus(afChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+            }
+            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                playMusic();
+            }
+            Log.i(TAG, "onPlay called");
         }
 
         @Override
         public void onPause() {
-//            pauseMusic();
-            Log.i(TAG,"onPause called");
+           pauseMusic();
+            Log.i(TAG, "onPause called");
         }
 
         @Override
         public void onStop() {
-//            stopMusic();
-            Log.i(TAG,"onStop called");
+           stopMusic();
+            Log.i(TAG, "onStop called");
         }
 
         @Override
         public void onSkipToPrevious() {
 //            previousSong();
-            Log.i(TAG,"onSkipToPrevious called");
+            Log.i(TAG, "onSkipToPrevious called");
 
         }
 
         @Override
         public void onSkipToNext() {
 //            nextSong();
-            Log.i(TAG,"onSkipToNext called");
+            Log.i(TAG, "onSkipToNext called");
         }
     };
     private PlaybackStateCompat.Builder mPlaybackStateCompatBuilder;
@@ -143,9 +134,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.i(TAG, "onCreate called: " + String.valueOf(mThreadId));
-        //startService(new Intent(this.getApplicationContext(), MediaPlaybackService.class));
-
+        Log.i(TAG, "onCreate called: ");
         mMediaSession = new MediaSessionCompat(MediaPlaybackService.this, TAG);
 
         // Enable callbacks from MediaButtons and TransportControls
@@ -165,22 +154,24 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setOnPreparedListener(this);
         mDefaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-       // mDefaultSharedPreferences.registerOnSharedPreferenceChangeListener(this);
         mMediaMetadataCompatBuilder = new MediaMetadataCompat.Builder();
         mSongList = MediaLibrary.getData(getApplicationContext());
-        Log.i(TAG, "onCreate called: end " + String.valueOf(mThreadId));
+        Log.i(TAG, "onCreate called: end ");
     }
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-        mIsReady = true;
-        playMusic();
+        mMediaPlayer.start();
     }
 
     public static NotificationCompat.Builder from(Context context, MediaSessionCompat mediaSession) {
         MediaControllerCompat controller = mediaSession.getController();
         MediaMetadataCompat mediaMetadata = controller.getMetadata();
         MediaDescriptionCompat description = mediaMetadata.getDescription();
+
+        if(description == null){
+            Log.i(TAG," MediaDescriptionCompat: null");
+        }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId);
 
@@ -195,61 +186,33 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
                 .setSmallIcon(R.drawable.play)
                 .setColor(ContextCompat.getColor(context, R.color.colorPrimaryDark))
 
-        // Add a pause button
+                // Add a pause button
                 .addAction(new NotificationCompat.Action(
-                            R.drawable.pause, context.getString(R.string.pause),
-                            MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_PLAY_PAUSE)))
+                        R.drawable.pause, context.getString(R.string.pause),
+                        MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_PLAY_PAUSE)))
                 .setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
-                            .setMediaSession(mediaSession.getSessionToken())
-                            .setShowActionsInCompactView(0)
-                            .setShowCancelButton(true)
-                            .setCancelButtonIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_STOP)));
+                        .setMediaSession(mediaSession.getSessionToken())
+                        .setShowActionsInCompactView(0)
+                        .setShowCancelButton(true)
+                        .setCancelButtonIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_STOP)));
         return builder;
     }
 
     void playMusic() {
-            if (!mMediaPlayer.isPlaying()) {
-                if (mIsReady) {
-
-                    startForeground(NOTIFICATION_ID,from(getApplicationContext(),mMediaSession).build());
-
-                    mMediaSession.setMetadata(mMediaMetadataCompatBuilder.build());
-
-                    mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_PLAYING, mMediaPlayer.getCurrentPosition(), 1.0f);
-                    mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
-
-                    mMediaSession.setActive(true);
-
-                    registerReceiver(myNoisyAudioStreamReceiver, intentFilter);
-
-                    mMediaPlayer.start();
-                    updatePlayingStateToSharedPreference(true);
-                } else {
-                    prepare();
-                }
-            } else {
-                prepare();
-            }
-    }
-
-    private void updatePlayingStateToSharedPreference(boolean state) {
-        SharedPreferences.Editor editor = mDefaultSharedPreferences.edit();
-        editor.putBoolean("isPlaying", state);
-        editor.apply();
+        prepare();
     }
 
     void pauseMusic() {
-        if (mMediaPlayer.isPlaying()) {
             mMediaPlayer.pause();
             mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_PAUSED, mMediaPlayer.getCurrentPosition(), 0);
             mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
             stopForeground(false);
-            updatePlayingStateToSharedPreference(false);
             unregisterReceiver(myNoisyAudioStreamReceiver);
-        }
     }
 
     void stopMusic() {
+        mMediaPlayer.stop();
+        mMediaPlayer.reset();
         AudioManager am = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
         // Abandon audio focus
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -257,78 +220,55 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
         } else {
             am.abandonAudioFocus(afChangeListener);
         }
-        if (mMediaPlayer.isPlaying()) {
-            mMediaPlayer.stop();
-            updatePlayingStateToSharedPreference(false);
-        }
-        mMediaPlayer.reset();
-        mIsReady = false;
-        unregisterReceiver(myNoisyAudioStreamReceiver);
-        stopForeground(true);
-        mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_PAUSED, mMediaPlayer.getCurrentPosition(), 0);
-        mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
         mMediaSession.setActive(false);
+        mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_STOPPED, mMediaPlayer.getCurrentPosition(), 0);
+        mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
+//        unregisterReceiver(myNoisyAudioStreamReceiver);
+        stopForeground(true);
 
     }
 
     void prepare() {
-        mPosition = mDefaultSharedPreferences.getInt("position", -1);
-        if (mPosition == -1) {
-            Log.i(TAG, "Select a song to play");
-        } else {
-            Song playSong = mSongList.get(mPosition);
+        mPosition = mDefaultSharedPreferences.getInt("position", 0);
 
-            mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, playSong.getTitle());
-            mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, playSong.getArtist());
-            //get id
-            long currSong = playSong.getId();
-            //set uri
-            Uri trackUri = ContentUris.withAppendedId(
-                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    currSong);
-            if (mMediaPlayer.isPlaying()) {
-                mMediaPlayer.stop();
-            }
-            mMediaPlayer.reset();
-            try {
-                mMediaPlayer.setDataSource(getApplicationContext(), trackUri);
-            } catch (Exception e) {
-                Log.e("MUSIC SERVICE", "Error setting data source", e);
-            }
-            mMediaPlayer.prepareAsync();
+        Song playSong = mSongList.get(mPosition);
+
+        mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, playSong.getTitle());
+        mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, playSong.getArtist());
+        //get id
+        long currSong = playSong.getId();
+        //set uri
+        Uri trackUri = ContentUris.withAppendedId(
+                android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                currSong);
+        mMediaPlayer.stop();
+        mMediaPlayer.reset();
+        try {
+            mMediaPlayer.setDataSource(getApplicationContext(), trackUri);
+        } catch (Exception e) {
+            Log.e("MUSIC SERVICE", "Error setting data source", e);
         }
-//        String trackUriString = mDefaultSharedPreferences.getString("key", mDefaultValueInPrepare);
-//        if(TextUtils.equals(trackUriString,mDefaultValueInPrepare)){
-//            Log.i(TAG,"Select a song to play");
-//        } else {
-//            if (mMediaPlayer.isPlaying()) {
-//                mMediaPlayer.stop();
-//            }
-//            mMediaPlayer.reset();
-//            Uri trackUri = Uri.parse(trackUriString);
-//            try {
-//                mMediaPlayer.setDataSource(getApplicationContext(), trackUri);
-//            } catch (Exception e) {
-//                Log.e("MUSIC SERVICE", "Error setting data source", e);
-//            }
-//            mMediaPlayer.prepareAsync();
-//        }
+
+        mMediaSession.setMetadata(mMediaMetadataCompatBuilder.build());
+
+        mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_PLAYING, mMediaPlayer.getCurrentPosition(), 1.0f);
+        mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
+
+        mMediaSession.setActive(true);
+
+        startForeground(NOTIFICATION_ID, from(getApplicationContext(), mMediaSession).build());
+
+        registerReceiver(myNoisyAudioStreamReceiver, intentFilter);
+
+        mMediaPlayer.prepareAsync();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        mThreadId = startId;
         Log.i(TAG, "onStartCommand called: " + String.valueOf(startId));
         MediaButtonReceiver.handleIntent(mMediaSession, intent);
         return super.onStartCommand(intent, flags, startId);
     }
-
-//    @Nullable
-//    @Override
-//    public IBinder onBind(Intent intent) {
-//        Log.i(TAG, "onBind called: " + String.valueOf(mThreadId));
-//        return mLocalBinder;
-//    }
 
     @Nullable
     @Override
@@ -345,19 +285,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
     }
 
     public void releaseResources() {
-        Log.i(TAG, "releaseResources called: " + String.valueOf(mThreadId));
-        stopSelf(mThreadId);
+        Log.i(TAG, "releaseResources called: ");
     }
 
     public void setSongs(ArrayList<Song> songList) {
         mSongList = songList;
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals("key")) {
-            Log.i(TAG, "onSharedPreferenceChanged called: " + sharedPreferences.getString(key, "defaultValue"));
-        }
     }
 
     public void previousSong() {
@@ -384,37 +316,29 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
         }
     }
 
-    class LocalBinder extends Binder {
-        MediaPlaybackService getService() {
-            return MediaPlaybackService.this;
-        }
-    }
-
     @Override
     public void unbindService(ServiceConnection conn) {
         super.unbindService(conn);
-        Log.i(TAG, "unbindService called: " + String.valueOf(mThreadId));
+        Log.i(TAG, "unbindService called: ");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        defaultSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
-        if (mMediaSession != null) {
-            mMediaSession.release();
-            mMediaSession = null;
-        }
         if (mMediaPlayer != null) {
             mMediaPlayer.release();
             mMediaPlayer = null;
         }
-        Log.i(TAG, "onDestroy called: " + String.valueOf(mThreadId));
+        if (mMediaSession != null) {
+            mMediaSession.release();
+            mMediaSession = null;
+        }
+        Log.i(TAG, "onDestroy called: ");
 
     }
 
     public void showLogs() {
-        Log.i(TAG, "showLogs called: " + String.valueOf(mThreadId));
+        Log.i(TAG, "showLogs called: ");
     }
 
     public class BecomingNoisyReceiver extends BroadcastReceiver {
