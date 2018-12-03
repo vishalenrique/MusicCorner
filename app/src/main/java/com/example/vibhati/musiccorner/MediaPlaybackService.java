@@ -209,6 +209,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
                 .setSmallIcon(R.drawable.play)
                 .setColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
 
+                builder.addAction(new NotificationCompat.Action(
+                R.drawable.previous, context.getString(R.string.skip_to_previous),
+                MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)));
+
                 if(controller.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
                     // Add a pause button
                 builder.addAction(new NotificationCompat.Action(
@@ -219,9 +223,12 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
                             R.drawable.play, context.getString(R.string.play),
                             MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
                 }
+                builder.addAction(new NotificationCompat.Action(
+                        R.drawable.next, context.getString(R.string.skip_to_next),
+                        MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_SKIP_TO_NEXT)));
                 builder.setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
                         .setMediaSession(mediaSession.getSessionToken())
-                        .setShowActionsInCompactView(0)
+                        .setShowActionsInCompactView(1)
                         .setShowCancelButton(true)
                         .setCancelButtonIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_STOP)));
         return builder;
