@@ -106,7 +106,6 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
                     new ComponentName(this, MediaPlaybackService.class),
                     mConnectionCallbacks,
                     null);
-            mMediaBrowser.connect();
         }
     }
 
@@ -190,6 +189,7 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
     protected void onStart() {
         super.onStart();
         Log.i(TAG,"onStart called");
+        mMediaBrowser.connect();
     }
 
 
@@ -203,7 +203,6 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
                             new ComponentName(this, MediaPlaybackService.class),
                             mConnectionCallbacks,
                             null);
-                    mMediaBrowser.connect();
                 }
             }
         }
@@ -258,16 +257,16 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
     protected void onStop() {
         super.onStop();
         Log.i(TAG,"onStop called");
+        if (MediaControllerCompat.getMediaController(SongsActivity.this) != null) {
+            MediaControllerCompat.getMediaController(SongsActivity.this).unregisterCallback(mControllerCallback);
+        }
+        mMediaBrowser.disconnect();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.i(TAG,"onDestroy called");
-        if (MediaControllerCompat.getMediaController(SongsActivity.this) != null) {
-            MediaControllerCompat.getMediaController(SongsActivity.this).unregisterCallback(mControllerCallback);
-        }
-            mMediaBrowser.disconnect();
     }
 
     @Override
@@ -289,22 +288,25 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
             Toast.makeText(this, "Service is not connected", Toast.LENGTH_SHORT).show();
         }
     }
-//    @Override
-//    public boolean onKeyDown(int keyCode, KeyEvent event) {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            return super.onKeyDown(keyCode, event);
-//        }
-//        switch (keyCode) {
-//            case KeyEvent.KEYCODE_MEDIA_PLAY:
-//                MediaControllerCompat.getMediaController(SongsActivity.this).dispatchMediaButtonEvent(event);
-//                return true;
-//            case KeyEvent.KEYCODE_MEDIA_PAUSE:
-//                MediaControllerCompat.getMediaController(SongsActivity.this).dispatchMediaButtonEvent(event);
-//                return true;
-//            case KeyEvent.KEYCODE_MEDIA_STOP:
-//                MediaControllerCompat.getMediaController(SongsActivity.this).dispatchMediaButtonEvent(event);
-//                return true;
-//        }
-//        return super.onKeyDown(keyCode, event);
-//    }
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return super.onKeyDown(keyCode, event);
+        }
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_MEDIA_PLAY:
+                MediaControllerCompat.getMediaController(SongsActivity.this).dispatchMediaButtonEvent(event);
+                return true;
+            case KeyEvent.KEYCODE_MEDIA_PAUSE:
+                MediaControllerCompat.getMediaController(SongsActivity.this).dispatchMediaButtonEvent(event);
+                return true;
+            case KeyEvent.KEYCODE_MEDIA_STOP:
+                MediaControllerCompat.getMediaController(SongsActivity.this).dispatchMediaButtonEvent(event);
+                return true;
+            case KeyEvent.KEYCODE_MEDIA_CLOSE:
+                MediaControllerCompat.getMediaController(SongsActivity.this).dispatchMediaButtonEvent(event);
+                return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 }
