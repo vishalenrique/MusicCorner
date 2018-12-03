@@ -148,7 +148,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
         mPlaybackStateCompatBuilder = new PlaybackStateCompat.Builder();
         mPlaybackStateCompatBuilder.setActions(
-                PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS | PlaybackStateCompat.ACTION_SKIP_TO_NEXT);
+                PlaybackStateCompat.ACTION_SET_CAPTIONING_ENABLED | PlaybackStateCompat.ACTION_PLAY |PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS | PlaybackStateCompat.ACTION_SKIP_TO_NEXT);
 
         setSessionToken(mMediaSession.getSessionToken());
 
@@ -202,7 +202,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 //                .setContentText(description.getSubtitle())
 //                .setSubText(description.getDescription())
 //                .setLargeIcon(description.getIconBitmap())
-                .setContentIntent(controller.getSessionActivity())
+                .setContentIntent(PendingIntent.getActivity(context,345,new Intent(context,SongsActivity.class),0))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_STOP))
                 .setSmallIcon(R.drawable.play)
