@@ -22,6 +22,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaBrowserServiceCompat;
@@ -206,13 +207,19 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_STOP))
                 .setSmallIcon(R.drawable.play)
-                .setColor(ContextCompat.getColor(context, R.color.colorPrimaryDark))
+                .setColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
 
-                // Add a pause button
-                .addAction(new NotificationCompat.Action(
-                        R.drawable.pause, context.getString(R.string.pause),
-                        MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_PLAY_PAUSE)))
-                .setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
+                if(controller.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
+                    // Add a pause button
+                builder.addAction(new NotificationCompat.Action(
+                            R.drawable.pause, context.getString(R.string.pause),
+                            MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
+                }else{
+                    builder.addAction(new NotificationCompat.Action(
+                            R.drawable.play, context.getString(R.string.play),
+                            MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
+                }
+                builder.setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
                         .setMediaSession(mediaSession.getSessionToken())
                         .setShowActionsInCompactView(0)
                         .setShowCancelButton(true)
@@ -229,6 +236,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             mMediaPlayer.pause();
             mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_PAUSED, mMediaPlayer.getCurrentPosition(), 0);
             mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
+            NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
+            notificationManagerCompat.notify(NOTIFICATION_ID,from(getApplicationContext(),mMediaSession).build());
             stopForeground(false);
             unregisterReceiver(myNoisyAudioStreamReceiver);
     }
