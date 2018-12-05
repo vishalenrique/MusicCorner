@@ -2,6 +2,7 @@ package com.example.vibhati.musiccorner;
 
 import android.Manifest;
 import android.content.ComponentName;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
@@ -308,5 +309,10 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
                 return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    public void nextActivity(View view) {
+        Intent intent = new Intent(this,MediaPlayerActivity.class);
+        startActivity(intent);
     }
 }
