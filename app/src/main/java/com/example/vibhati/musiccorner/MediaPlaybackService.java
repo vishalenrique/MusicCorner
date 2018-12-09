@@ -2,7 +2,9 @@ package com.example.vibhati.musiccorner;
 
 import android.app.PendingIntent;
 import android.app.Service;
+import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
@@ -178,6 +180,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
         Song playSong = mSongList.get(mPosition);
 
+        SharedPreferences.Editor editor = mDefaultSharedPreferences.edit();
+        editor.putString(MusicWidget.SONG_NAME,playSong.getTitle());
+        editor.putBoolean(MusicWidget.isPlaying,false);
+        editor.commit();
+
         mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, playSong.getTitle());
         mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, playSong.getArtist());
         mMediaSession.setMetadata(mMediaMetadataCompatBuilder.build());
@@ -249,6 +256,19 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
             notificationManagerCompat.notify(NOTIFICATION_ID,from(getApplicationContext(),mMediaSession).build());
             stopForeground(false);
+
+            SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences.Editor editor = defaultSharedPreferences.edit();
+            editor.putBoolean(MusicWidget.isPlaying,false);
+            editor.commit();
+
+            Intent intent = new Intent(this, MusicWidget.class);
+            intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getApplication());
+            int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(getApplication(), MusicWidget.class));
+            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+            sendBroadcast(intent);
+
             unregisterReceiver(myNoisyAudioStreamReceiver);
     }
 
@@ -277,6 +297,18 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
 
             startForeground(NOTIFICATION_ID, from(getApplicationContext(), mMediaSession).build());
+
+            SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences.Editor editor = defaultSharedPreferences.edit();
+            editor.putBoolean(MusicWidget.isPlaying,true);
+            editor.commit();
+
+            Intent intent = new Intent(this, MusicWidget.class);
+            intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getApplication());
+            int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(getApplication(), MusicWidget.class));
+            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+            sendBroadcast(intent);
 
             registerReceiver(myNoisyAudioStreamReceiver, intentFilter);
 
@@ -310,6 +342,20 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             mMediaSession.setActive(true);
 
             startForeground(NOTIFICATION_ID, from(getApplicationContext(), mMediaSession).build());
+
+            SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences.Editor editor = defaultSharedPreferences.edit();
+            editor.putString(MusicWidget.SONG_NAME,playSong.getTitle());
+            editor.putBoolean(MusicWidget.isPlaying,true);
+            editor.commit();
+
+            Intent intent = new Intent(this, MusicWidget.class);
+            intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getApplication());
+            int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(getApplication(), MusicWidget.class));
+            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+            sendBroadcast(intent);
+
 
             registerReceiver(myNoisyAudioStreamReceiver, intentFilter);
 

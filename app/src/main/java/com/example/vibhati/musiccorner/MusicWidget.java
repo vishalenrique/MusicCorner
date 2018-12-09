@@ -5,6 +5,9 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.RemoteViews;
 
 /**
@@ -12,13 +15,28 @@ import android.widget.RemoteViews;
  */
 public class MusicWidget extends AppWidgetProvider {
 
+    private static final String TAG = "MusicWidget";
+    public static final String SONG_NAME = "songName";
+    public static final String isPlaying = "isPlaying";
+
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {
 
-        CharSequence widgetText = context.getString(R.string.appwidget_text);
+        Log.i(TAG,"updateAppWidget called");
+
+        SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String songTitle = defaultSharedPreferences.getString(SONG_NAME, "None");
+        boolean isPlaying = defaultSharedPreferences.getBoolean(MusicWidget.isPlaying, false);
+
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.music_widget);
-//        views.setTextViewText(R.id.appwidget_text, widgetText);
+
+        views.setTextViewText(R.id.widget_title,songTitle);
+        if(isPlaying){
+            views.setTextViewText(R.id.widget_play,"pause");
+        }else{
+            views.setTextViewText(R.id.widget_play,"play");
+        }
         Intent intentPlay = new Intent(context, MediaPlaybackService.class);
         intentPlay.setAction(MediaPlaybackService.ACTION_WIDGET_PLAY);
         views.setOnClickPendingIntent(R.id.widget_play, PendingIntent.getService(context,23,intentPlay,PendingIntent.FLAG_UPDATE_CURRENT));
@@ -37,6 +55,7 @@ public class MusicWidget extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         // There may be multiple widgets active, so update all of them
+        Log.i(TAG,"onUpdate called");
         for (int appWidgetId : appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId);
         }
@@ -45,11 +64,19 @@ public class MusicWidget extends AppWidgetProvider {
     @Override
     public void onEnabled(Context context) {
         // Enter relevant functionality for when the first widget is created
+        Log.i(TAG,"onEnabled called");
     }
 
     @Override
     public void onDisabled(Context context) {
         // Enter relevant functionality for when the last widget is disabled
+        Log.i(TAG,"onDisabled called");
+    }
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        Log.i(TAG,"onReceive called");
+        super.onReceive(context, intent);
     }
 }
 
