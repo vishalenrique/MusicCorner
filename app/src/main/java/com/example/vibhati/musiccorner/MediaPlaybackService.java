@@ -2,7 +2,9 @@ package com.example.vibhati.musiccorner;
 
 import android.app.PendingIntent;
 import android.app.Service;
+import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
@@ -42,6 +44,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
     private static final int NOTIFICATION_ID = 234;
     private static final int PENDING_INTENT_REQUEST_CODE = 32;
+    public static final String ACTION_WIDGET_PLAY = "actionWidgetPlay";
+    public static final String ACTION_WIDGET_PREVIOUS = "actionWidgetPrevious";
+    public static final String ACTION_WIDGET_NEXT = "actionWidgetNext";
     private static String channelId = "channelId";
     private static final String TAG = "MediaPlaybackService";
     private MediaPlayer mMediaPlayer;
@@ -175,6 +180,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
         Song playSong = mSongList.get(mPosition);
 
+        SharedPreferences.Editor editor = mDefaultSharedPreferences.edit();
+        editor.putString(MusicWidget.SONG_NAME,playSong.getTitle());
+//        editor.putBoolean(MusicWidget.isPlaying,false);
+        editor.commit();
+
         mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, playSong.getTitle());
         mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, playSong.getArtist());
         mMediaSession.setMetadata(mMediaMetadataCompatBuilder.build());
@@ -246,6 +256,19 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
             notificationManagerCompat.notify(NOTIFICATION_ID,from(getApplicationContext(),mMediaSession).build());
             stopForeground(false);
+
+            SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences.Editor editor = defaultSharedPreferences.edit();
+            editor.putBoolean(MusicWidget.isPlaying,false);
+            editor.commit();
+
+            Intent intent = new Intent(this, MusicWidget.class);
+            intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getApplication());
+            int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(getApplication(), MusicWidget.class));
+            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+            sendBroadcast(intent);
+
             unregisterReceiver(myNoisyAudioStreamReceiver);
     }
 
@@ -274,6 +297,18 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
 
             startForeground(NOTIFICATION_ID, from(getApplicationContext(), mMediaSession).build());
+
+            SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences.Editor editor = defaultSharedPreferences.edit();
+            editor.putBoolean(MusicWidget.isPlaying,true);
+            editor.commit();
+
+            Intent intent = new Intent(this, MusicWidget.class);
+            intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getApplication());
+            int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(getApplication(), MusicWidget.class));
+            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+            sendBroadcast(intent);
 
             registerReceiver(myNoisyAudioStreamReceiver, intentFilter);
 
@@ -308,6 +343,20 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
             startForeground(NOTIFICATION_ID, from(getApplicationContext(), mMediaSession).build());
 
+            SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences.Editor editor = defaultSharedPreferences.edit();
+            editor.putString(MusicWidget.SONG_NAME,playSong.getTitle());
+            editor.putBoolean(MusicWidget.isPlaying,true);
+            editor.commit();
+
+            Intent intent = new Intent(this, MusicWidget.class);
+            intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getApplication());
+            int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(getApplication(), MusicWidget.class));
+            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+            sendBroadcast(intent);
+
+
             registerReceiver(myNoisyAudioStreamReceiver, intentFilter);
 
             mMediaPlayer.prepareAsync();
@@ -317,6 +366,27 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand called: " + String.valueOf(startId));
+        if(intent !=null) {
+            String action = intent.getAction();
+            if (!TextUtils.isEmpty(action)) {
+                switch (action) {
+                    case ACTION_WIDGET_PLAY:
+                        if(mMediaSession.getController().getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING)
+                        mCallback.onPause();
+                        else
+                        mCallback.onPlay();
+                        break;
+                    case ACTION_WIDGET_PREVIOUS:
+                        previousSong();
+                        break;
+                    case ACTION_WIDGET_NEXT:
+                        nextSong();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
         MediaButtonReceiver.handleIntent(mMediaSession, intent);
         return super.onStartCommand(intent, flags, startId);
     }
