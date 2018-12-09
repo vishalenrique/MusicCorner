@@ -182,7 +182,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
         SharedPreferences.Editor editor = mDefaultSharedPreferences.edit();
         editor.putString(MusicWidget.SONG_NAME,playSong.getTitle());
-        editor.putBoolean(MusicWidget.isPlaying,false);
+//        editor.putBoolean(MusicWidget.isPlaying,false);
         editor.commit();
 
         mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, playSong.getTitle());
