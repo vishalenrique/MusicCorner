@@ -11,14 +11,14 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.TabLayout;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
@@ -27,22 +27,23 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class SongsActivity extends AppCompatActivity implements SongAdapter.ClickListener{
+public class SongsActivity extends AppCompatActivity implements OnSongClickListener{
 
     ArrayList<Song> songList;
     private static final int MY_PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 1;
     private static final String TAG = "SongsActivity";
-    RecyclerView recyclerView;
-    private SongAdapter adapter;
 
     // Here
     Button mPlayPause;
     TextView mSongTitle;
+    ViewPager mViewPager;
+    TabLayout mTabLayout;
     private MediaBrowserCompat mMediaBrowser;
     private MediaBrowserCompat.ConnectionCallback mConnectionCallbacks = new MediaBrowserCompat.ConnectionCallback (){
 
@@ -90,12 +91,7 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         setSupportActionBar(toolbar);
         Log.i(TAG,"onCreate called");
 
-        recyclerView = findViewById(R.id.rv_main);
         songList = new ArrayList<>();
-        adapter = new SongAdapter(this, null, this);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(adapter);
 
         //get the permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -133,10 +129,15 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
     };
 
     private void buildTransportControls() {
+        mTabLayout = findViewById(R.id.tl_main);
+        mViewPager = findViewById(R.id.vp_main);
         mPlayPause = findViewById(R.id.play_pause_main);
         mSongTitle = findViewById(R.id.song_title_main);
+        setupViewPagerAndTabLayout();
         updateSongs();
 
+
+//        getSupportFragmentManager().beginTransaction().replace(R.id.fl_container_main,SongsFragment.newInstance()).commit();
         MediaControllerCompat mediaController = MediaControllerCompat.getMediaController(SongsActivity.this);
 
         // Display the initial state
@@ -167,6 +168,14 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
                 }
             }
         });
+    }
+
+    private void setupViewPagerAndTabLayout() {
+        SongsPagerAdapter adapter = new SongsPagerAdapter(getSupportFragmentManager());
+        adapter.addFragment(SongsFragment.newInstance(),"Songs");
+        adapter.addFragment(FavoriteSongsFragment.newInstance(),"Favorites");
+        mViewPager.setAdapter(adapter);
+        mTabLayout.setupWithViewPager(mViewPager);
     }
 
     public void previousSong(View view) {
@@ -212,7 +221,6 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
     private void updateSongs() {
         songList = MediaLibrary.getData(SongsActivity.this);
         Log.i(TAG,"songsList" + songList.size());
-        adapter.dataChanged(songList);
     }
 
     @Override
@@ -276,19 +284,7 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
         Log.i(TAG,"onBackPressed called");
         moveTaskToBack(true);
     }
-    @Override
-    public void onClick(Song song, int position) {
-        if(mMediaBrowser.isConnected()) {
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putInt("position",position);
-            editor.apply();
-            Toast.makeText(this, song.getTitle(), Toast.LENGTH_SHORT).show();
-            MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().play();
-        }else{
-            Toast.makeText(this, "Service is not connected", Toast.LENGTH_SHORT).show();
-        }
-    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -314,5 +310,19 @@ public class SongsActivity extends AppCompatActivity implements SongAdapter.Clic
     public void nextActivity(View view) {
         Intent intent = new Intent(this,MediaPlayerActivity.class);
         startActivity(intent);
+    }
+
+    @Override
+    public void onSongClicked(Song song, int position) {
+        if(mMediaBrowser.isConnected()) {
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putInt("position",position);
+            editor.apply();
+            Toast.makeText(this, song.getTitle(), Toast.LENGTH_SHORT).show();
+            MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().play();
+        }else{
+            Toast.makeText(this, "Service is not connected", Toast.LENGTH_SHORT).show();
+        }
     }
 }
