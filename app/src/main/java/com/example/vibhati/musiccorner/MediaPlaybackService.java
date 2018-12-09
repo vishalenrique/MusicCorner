@@ -42,6 +42,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
     private static final int NOTIFICATION_ID = 234;
     private static final int PENDING_INTENT_REQUEST_CODE = 32;
+    public static final String ACTION_WIDGET_PLAY = "actionWidgetPlay";
+    public static final String ACTION_WIDGET_PREVIOUS = "actionWidgetPrevious";
+    public static final String ACTION_WIDGET_NEXT = "actionWidgetNext";
     private static String channelId = "channelId";
     private static final String TAG = "MediaPlaybackService";
     private MediaPlayer mMediaPlayer;
@@ -317,6 +320,27 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand called: " + String.valueOf(startId));
+        if(intent !=null) {
+            String action = intent.getAction();
+            if (!TextUtils.isEmpty(action)) {
+                switch (action) {
+                    case ACTION_WIDGET_PLAY:
+                        if(mMediaSession.getController().getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING)
+                        mCallback.onPause();
+                        else
+                        mCallback.onPlay();
+                        break;
+                    case ACTION_WIDGET_PREVIOUS:
+                        previousSong();
+                        break;
+                    case ACTION_WIDGET_NEXT:
+                        nextSong();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
         MediaButtonReceiver.handleIntent(mMediaSession, intent);
         return super.onStartCommand(intent, flags, startId);
     }

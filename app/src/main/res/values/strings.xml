@@ -10,4 +10,6 @@
     <string name="play">play</string>
     <string name="skip_to_next">Next</string>
     <string name="skip_to_previous">previous</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
 </resources>
