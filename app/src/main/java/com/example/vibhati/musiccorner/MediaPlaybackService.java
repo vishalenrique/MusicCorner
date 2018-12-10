@@ -3,6 +3,8 @@ package com.example.vibhati.musiccorner;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentUris;
@@ -137,6 +139,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
     };
     private PlaybackStateCompat.Builder mPlaybackStateCompatBuilder;
     private MediaMetadataCompat.Builder mMediaMetadataCompatBuilder;
+    private List<Song> mFavoriteSongList;
+    private boolean mIsFavoriteMode;
 
 
     @Override
@@ -173,6 +177,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
         mDefaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         mSongList = MediaLibrary.getData(getApplicationContext());
+
+        SongRepository.getInstance(getApplication()).getSongs().observeForever(new Observer<List<Song>>() {
+            @Override
+            public void onChanged(@Nullable List<Song> songs) {
+                mFavoriteSongList = songs;
+                Log.i(TAG,"mFavoriteSongList size: "+ mFavoriteSongList.size());
+            }
+        });
 
         mMediaMetadataCompatBuilder = new MediaMetadataCompat.Builder();
 
@@ -316,7 +328,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
         }else {
             mPosition = mDefaultSharedPreferences.getInt("position", 0);
 
-            Song playSong = mSongList.get(mPosition);
+            mIsFavoriteMode = mDefaultSharedPreferences.getBoolean("isFavoriteMode", false);
+            Song playSong = mIsFavoriteMode ? mFavoriteSongList.get(mPosition) : mSongList.get(mPosition);
 
             mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, playSong.getTitle());
             mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, playSong.getArtist());
@@ -426,7 +439,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
     }
 
     public void nextSong() {
-        if (mPosition < (mSongList.size()-1)) {
+        int size = mIsFavoriteMode?mFavoriteSongList.size():mSongList.size();
+        if (mPosition < size-1) {
             SharedPreferences.Editor editor = mDefaultSharedPreferences.edit();
             editor.putInt("position", ++mPosition);
             editor.commit();

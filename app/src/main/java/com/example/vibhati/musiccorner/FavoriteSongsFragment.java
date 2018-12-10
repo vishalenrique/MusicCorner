@@ -23,12 +23,16 @@ public class FavoriteSongsFragment extends Fragment implements SongAdapter.Click
     private SongAdapter mAdapter;
     private static final String TAG = "FavoriteSongsFragment";
     private ArrayList<Song> songList;
-    public OnSongClickListener mSongClickListener;
+    public OnFavoriteSongClickListener mOnFavoriteSongClickListener;
     private SongViewModel mSongViewModel;
+
+    public interface OnFavoriteSongClickListener{
+        public void onFavoriteSongClicked(Song song,int position);
+    }
 
     @Override
     public void onClick(Song song, int position) {
-        mSongClickListener.onSongClicked(song,position);
+        mOnFavoriteSongClickListener.onFavoriteSongClicked(song,position);
     }
 
     static FavoriteSongsFragment newInstance() {
@@ -58,7 +62,7 @@ public class FavoriteSongsFragment extends Fragment implements SongAdapter.Click
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        mSongClickListener = (OnSongClickListener) context;
+        mOnFavoriteSongClickListener = (OnFavoriteSongClickListener) context;
     }
 
     private void updateSongs() {

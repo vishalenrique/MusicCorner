@@ -33,7 +33,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class SongsActivity extends AppCompatActivity implements OnSongClickListener{
+public class SongsActivity extends AppCompatActivity implements OnSongClickListener,FavoriteSongsFragment.OnFavoriteSongClickListener{
 
     ArrayList<Song> songList;
     private static final int MY_PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 1;
@@ -317,6 +317,7 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
         if(mMediaBrowser.isConnected()) {
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("isFavoriteMode",false);
             editor.putInt("position",position);
             editor.apply();
             //Toast.makeText(this, song.getTitle(), Toast.LENGTH_SHORT).show();
@@ -324,5 +325,16 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
         }else{
             Toast.makeText(this, "Service is not connected", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public void onFavoriteSongClicked(Song song, int position) {
+        Log.i(TAG,"onFavoriteSongClicked called");
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("isFavoriteMode",true);
+        editor.putInt("position",position);
+        editor.apply();
+        MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().play();
     }
 }
