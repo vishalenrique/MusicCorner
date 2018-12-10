@@ -31,6 +31,9 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
+
 import java.util.ArrayList;
 
 public class SongsActivity extends AppCompatActivity implements OnSongClickListener,FavoriteSongsFragment.OnFavoriteSongClickListener{
