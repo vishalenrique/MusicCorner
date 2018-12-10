@@ -1,5 +1,7 @@
 package com.example.vibhati.musiccorner;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -13,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class FavoriteSongsFragment extends Fragment implements SongAdapter.ClickListener {
 
@@ -21,6 +24,7 @@ public class FavoriteSongsFragment extends Fragment implements SongAdapter.Click
     private static final String TAG = "FavoriteSongsFragment";
     private ArrayList<Song> songList;
     public OnSongClickListener mSongClickListener;
+    private SongViewModel mSongViewModel;
 
     @Override
     public void onClick(Song song, int position) {
@@ -35,12 +39,19 @@ public class FavoriteSongsFragment extends Fragment implements SongAdapter.Click
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_songs_main, container, false);
+        mSongViewModel = ViewModelProviders.of(this).get(SongViewModel.class);
+        mSongViewModel.getAllSongs().observe(this, new Observer<List<Song>>() {
+            @Override
+            public void onChanged(@Nullable List<Song> songs) {
+                mAdapter.dataChanged(songs);
+            }
+        });
         mRecyclerView = rootView.findViewById(R.id.rv_main);
         mAdapter = new SongAdapter(getActivity(), null, this);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mAdapter);
-        updateSongs();
+        //updateSongs();
         return rootView;
     }
 

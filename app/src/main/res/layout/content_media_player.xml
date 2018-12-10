@@ -8,11 +8,13 @@
     tools:context=".MediaPlayerActivity"
     tools:showIn="@layout/activity_media_player">
 
-    <TextView
+    <Button
+        android:id="@+id/favorite_media_player"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="32sp"
         android:text="Here"
-        android:layout_centerInParent="true"/>
+        android:layout_centerInParent="true"
+       />
 
 </RelativeLayout>

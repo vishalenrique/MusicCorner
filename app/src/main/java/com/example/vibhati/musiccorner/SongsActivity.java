@@ -319,7 +319,7 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putInt("position",position);
             editor.apply();
-            Toast.makeText(this, song.getTitle(), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, song.getTitle(), Toast.LENGTH_SHORT).show();
             MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().play();
         }else{
             Toast.makeText(this, "Service is not connected", Toast.LENGTH_SHORT).show();

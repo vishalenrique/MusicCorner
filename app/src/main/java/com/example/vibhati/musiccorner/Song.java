@@ -1,17 +1,40 @@
 package com.example.vibhati.musiccorner;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
+@Entity(tableName = "song_table")
 public class Song implements Parcelable {
+
+    @PrimaryKey
+    @NonNull
     private long id;
+
     private String title;
+
     private String artist;
 
     public Song(long id, String title, String artist) {
         this.id = id;
         this.title = title;
         this.artist = artist;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Song) {
+            Song song = (Song) obj;
+            return this.id == song.getId();
+        }
+        return super.equals(obj);
     }
 
     public long getId() {
