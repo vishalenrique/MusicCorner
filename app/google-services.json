@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "317601042740",
+    "firebase_url": "https://music-corner-94fe3.firebaseio.com",
+    "project_id": "music-corner-94fe3",
+    "storage_bucket": "music-corner-94fe3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:317601042740:android:12435647f089098f",
+        "android_client_info": {
+          "package_name": "com.example.vibhati.musiccorner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "317601042740-a2mt44r7fkhj8dlsdjhkkgpmh9lb71lg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHbe7STQFPG-VwCYSSnJ6kfvVuILZuPj4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -15,6 +15,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,6 +70,7 @@ public class MediaPlayerActivity extends AppCompatActivity {
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Analytics.logEvent(MediaPlayerActivity.this,"LIKE_UNLIKE",null);
                 if(!isFavorite){
                     mSongViewModel.insert(mSong);
 
