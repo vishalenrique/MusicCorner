@@ -1,14 +1,24 @@
 package com.example.vibhati.musiccorner;
 
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
+import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder>{
@@ -43,11 +53,24 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         songViewHolder.titleTextView.setText(song.getTitle());
         songViewHolder.artistTextView.setText(song.getArtist());
 
+        try {
+            Uri sArtworkUri = Uri
+                    .parse("content://media/external/audio/albumart");
+            Uri uri = ContentUris.withAppendedId(sArtworkUri,
+                    Long.valueOf(song.getAlbumId()));
+            Picasso.get().load(uri)
+                    .fit().centerCrop()
+                    .placeholder(R.drawable.play)
+                    .into(songViewHolder.artImageView);
+        } catch (Exception e) {
+            Log.e("Exception", e.toString());
+        }
+
         final int currentPosition = position;
         songViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mClickListener.onClick(song,position);
+                mClickListener.onClick(song,currentPosition);
             }
         });
     }
@@ -64,7 +87,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
     class SongViewHolder extends RecyclerView.ViewHolder{
 
-       ImageView imageView;
+       ImageView artImageView;
        TextView titleTextView;
        TextView artistTextView;
 
@@ -72,6 +95,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
            super(itemView);
            titleTextView = itemView.findViewById(R.id.tv_main_title);
            artistTextView = itemView.findViewById(R.id.tv_main_artist);
+           artImageView = itemView.findViewById(R.id.iv_main_thumbnail);
        }
    }
 }

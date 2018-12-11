@@ -36,7 +36,7 @@ public class SongLiveData extends MutableLiveData<List<Song>> {
                 long thisId = cursor.getLong(idColumn);
                 String thisTitle = cursor.getString(titleColumn);
                 String thisArtist = cursor.getString(artistColumn);
-                songList.add(new Song(thisId, thisTitle, thisArtist));
+//                songList.add(new Song(thisId, thisTitle, thisArtist));
             }
             while (cursor.moveToNext());
 

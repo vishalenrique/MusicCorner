@@ -1,5 +1,6 @@
 package com.example.vibhati.musiccorner;
 
+import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
@@ -17,10 +18,22 @@ public class Song implements Parcelable {
 
     private String artist;
 
-    public Song(long id, String title, String artist) {
+    @ColumnInfo(name = "album_id")
+    private long albumId;
+
+    public Song(@NonNull long id, String title, String artist, long albumId) {
         this.id = id;
         this.title = title;
         this.artist = artist;
+        this.albumId = albumId;
+    }
+
+    public long getAlbumId() {
+        return albumId;
+    }
+
+    public void setAlbumId(long albumId) {
+        this.albumId = albumId;
     }
 
     @Override
@@ -65,8 +78,6 @@ public class Song implements Parcelable {
     public String toString() {
         return title + " - " + artist;
     }
-
-
     @Override
     public int describeContents() {
         return 0;
@@ -77,15 +88,17 @@ public class Song implements Parcelable {
         dest.writeLong(this.id);
         dest.writeString(this.title);
         dest.writeString(this.artist);
+        dest.writeLong(this.albumId);
     }
 
     protected Song(Parcel in) {
         this.id = in.readLong();
         this.title = in.readString();
         this.artist = in.readString();
+        this.albumId = in.readLong();
     }
 
-    public static final Parcelable.Creator<Song> CREATOR = new Parcelable.Creator<Song>() {
+    public static final Creator<Song> CREATOR = new Creator<Song>() {
         @Override
         public Song createFromParcel(Parcel source) {
             return new Song(source);

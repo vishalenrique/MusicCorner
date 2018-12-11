@@ -23,12 +23,15 @@ public class MediaLibrary {
                         (MediaStore.Audio.Media._ID);
                 int artistColumn = cursor.getColumnIndex
                         (MediaStore.Audio.Media.ARTIST);
+                int albumId = cursor.getColumnIndex
+                        (MediaStore.Audio.Media.ALBUM_ID);
                 songList = new ArrayList<>();
                 do {
                     long thisId = cursor.getLong(idColumn);
                     String thisTitle = cursor.getString(titleColumn);
                     String thisArtist = cursor.getString(artistColumn);
-                    songList.add(new Song(thisId, thisTitle, thisArtist));
+                    long thisAlbumId = cursor.getLong(albumId);
+                    songList.add(new Song(thisId, thisTitle, thisArtist, thisAlbumId));
                 }
                 while (cursor.moveToNext());
 
