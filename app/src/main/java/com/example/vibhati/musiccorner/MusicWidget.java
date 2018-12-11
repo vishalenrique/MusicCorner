@@ -3,12 +3,16 @@ package com.example.vibhati.musiccorner;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.RemoteViews;
+
+import com.squareup.picasso.Picasso;
 
 /**
  * Implementation of App Widget functionality.
@@ -18,6 +22,7 @@ public class MusicWidget extends AppWidgetProvider {
     private static final String TAG = "MusicWidget";
     public static final String SONG_NAME = "songName";
     public static final String isPlaying = "isPlaying";
+    public static final String ALBUM_ART = "albumArt";
 
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {
@@ -26,10 +31,15 @@ public class MusicWidget extends AppWidgetProvider {
 
         SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         String songTitle = defaultSharedPreferences.getString(SONG_NAME, "None");
+        long albumArtId = defaultSharedPreferences.getLong(ALBUM_ART, -1);
         boolean isPlaying = defaultSharedPreferences.getBoolean(MusicWidget.isPlaying, false);
 
+        Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
+        Uri uri = ContentUris.withAppendedId(sArtworkUri, Long.valueOf(albumArtId));
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.music_widget);
+
+        views.setImageViewUri(R.id.widget_album_art,uri);
 
         views.setTextViewText(R.id.widget_title,songTitle);
         if(isPlaying){

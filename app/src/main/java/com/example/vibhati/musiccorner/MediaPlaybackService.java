@@ -194,6 +194,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
         SharedPreferences.Editor editor = mDefaultSharedPreferences.edit();
         editor.putString(MusicWidget.SONG_NAME,playSong.getTitle());
+        editor.putLong(MusicWidget.ALBUM_ART,playSong.getAlbumId());
 //        editor.putBoolean(MusicWidget.isPlaying,false);
         editor.commit();
 
@@ -359,6 +360,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
             SharedPreferences.Editor editor = defaultSharedPreferences.edit();
             editor.putString(MusicWidget.SONG_NAME,playSong.getTitle());
+            editor.putLong(MusicWidget.ALBUM_ART,playSong.getAlbumId());
             editor.putBoolean(MusicWidget.isPlaying,true);
             editor.commit();
 
