@@ -13,6 +13,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
@@ -23,6 +25,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -39,6 +42,7 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -194,12 +198,13 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
         SharedPreferences.Editor editor = mDefaultSharedPreferences.edit();
         editor.putString(MusicWidget.SONG_NAME,playSong.getTitle());
-        editor.putLong(MusicWidget.ALBUM_ART,playSong.getAlbumId());
+        editor.putString(MusicWidget.ALBUM_ART,playSong.getAlbumUri());
 //        editor.putBoolean(MusicWidget.isPlaying,false);
         editor.commit();
 
         mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, playSong.getTitle());
         mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, playSong.getArtist());
+        mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI,playSong.getAlbumUri());
         mMediaSession.setMetadata(mMediaMetadataCompatBuilder.build());
 
         Log.i(TAG, "onCreate called: end ");
@@ -221,11 +226,18 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId);
 
+        Bitmap bitmap = null;
+        try {
+             bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), description.getIconUri());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         builder
                 .setContentTitle(description.getTitle())
-//                .setContentText(description.getSubtitle())
-//                .setSubText(description.getDescription())
-//                .setLargeIcon(description.getIconBitmap())
+                .setContentText(description.getSubtitle())
+                .setSubText(description.getDescription())
+                .setLargeIcon(bitmap)
                 .setContentIntent(PendingIntent.getActivity(context,345,new Intent(context,SongsActivity.class),0))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_STOP))
@@ -334,6 +346,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
             mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, playSong.getTitle());
             mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, playSong.getArtist());
+            mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI,playSong.getAlbumUri());
             //get id
             long currSong = playSong.getId();
             //set uri
@@ -360,7 +373,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
             SharedPreferences.Editor editor = defaultSharedPreferences.edit();
             editor.putString(MusicWidget.SONG_NAME,playSong.getTitle());
-            editor.putLong(MusicWidget.ALBUM_ART,playSong.getAlbumId());
+            editor.putString(MusicWidget.ALBUM_ART,playSong.getAlbumUri());
             editor.putBoolean(MusicWidget.isPlaying,true);
             editor.commit();
 

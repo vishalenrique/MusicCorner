@@ -18,22 +18,22 @@ public class Song implements Parcelable {
 
     private String artist;
 
-    @ColumnInfo(name = "album_id")
-    private long albumId;
+    @ColumnInfo(name = "album_uri")
+    private String albumUri;
 
-    public Song(@NonNull long id, String title, String artist, long albumId) {
+    public Song(@NonNull long id, String title, String artist, String albumUri) {
         this.id = id;
         this.title = title;
         this.artist = artist;
-        this.albumId = albumId;
+        this.albumUri = albumUri;
     }
 
-    public long getAlbumId() {
-        return albumId;
+    public String getAlbumUri() {
+        return albumUri;
     }
 
-    public void setAlbumId(long albumId) {
-        this.albumId = albumId;
+    public void setAlbumUri(String albumUri) {
+        this.albumUri = albumUri;
     }
 
     @Override
@@ -74,10 +74,7 @@ public class Song implements Parcelable {
         this.artist = artist;
     }
 
-    @Override
-    public String toString() {
-        return title + " - " + artist;
-    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -88,14 +85,14 @@ public class Song implements Parcelable {
         dest.writeLong(this.id);
         dest.writeString(this.title);
         dest.writeString(this.artist);
-        dest.writeLong(this.albumId);
+        dest.writeString(this.albumUri);
     }
 
     protected Song(Parcel in) {
         this.id = in.readLong();
         this.title = in.readString();
         this.artist = in.readString();
-        this.albumId = in.readLong();
+        this.albumUri = in.readString();
     }
 
     public static final Creator<Song> CREATOR = new Creator<Song>() {

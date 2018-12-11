@@ -1,7 +1,9 @@
 package com.example.vibhati.musiccorner;
 
+import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.provider.MediaStore;
 
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ public class MediaLibrary {
     private static ArrayList<Song> songList;
 
     public static ArrayList<Song> getData(Context context){
+        Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
         if(songList == null) {
             Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
@@ -31,7 +34,7 @@ public class MediaLibrary {
                     String thisTitle = cursor.getString(titleColumn);
                     String thisArtist = cursor.getString(artistColumn);
                     long thisAlbumId = cursor.getLong(albumId);
-                    songList.add(new Song(thisId, thisTitle, thisArtist, thisAlbumId));
+                    songList.add(new Song(thisId, thisTitle, thisArtist,  ContentUris.withAppendedId(sArtworkUri, Long.valueOf(thisAlbumId)).toString()));
                 }
                 while (cursor.moveToNext());
 

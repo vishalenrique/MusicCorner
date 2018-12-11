@@ -54,11 +54,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         songViewHolder.artistTextView.setText(song.getArtist());
 
         try {
-            Uri sArtworkUri = Uri
-                    .parse("content://media/external/audio/albumart");
-            Uri uri = ContentUris.withAppendedId(sArtworkUri,
-                    Long.valueOf(song.getAlbumId()));
-            Picasso.get().load(uri)
+            Picasso.get().load(Uri.parse(song.getAlbumUri()))
                     .fit().centerCrop()
                     .placeholder(R.drawable.play)
                     .into(songViewHolder.artImageView);
