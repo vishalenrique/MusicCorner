@@ -298,6 +298,9 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
         if (MediaControllerCompat.getMediaController(SongsActivity.this) != null) {
             MediaControllerCompat.getMediaController(SongsActivity.this).unregisterCallback(mControllerCallback);
         }
+        if(MediaControllerCompat.getMediaController(SongsActivity.this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PAUSED ){
+            MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().stop();
+        }
         mMediaBrowser.disconnect();
     }
 
