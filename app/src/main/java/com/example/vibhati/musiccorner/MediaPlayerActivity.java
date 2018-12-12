@@ -1,12 +1,8 @@
 package com.example.vibhati.musiccorner;
 
-import android.Manifest;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.os.Build;
@@ -14,35 +10,23 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,7 +40,7 @@ public class MediaPlayerActivity extends AppCompatActivity {
     ImageView mAlbumArt;
     TextView mSongTitle;
     SeekBar mSeekBar;
-    Button mButton;
+    ImageView mLikeUnlike;
     private ArrayList<Song> mSongList;
     private Song mSong;
     private MediaBrowserCompat mMediaBrowser;
@@ -65,11 +49,11 @@ public class MediaPlayerActivity extends AppCompatActivity {
     private boolean isFavorite;
     private boolean mUserIsSeeking;
 
-    private MediaBrowserCompat.ConnectionCallback mConnectionCallbacks = new MediaBrowserCompat.ConnectionCallback (){
+    private MediaBrowserCompat.ConnectionCallback mConnectionCallbacks = new MediaBrowserCompat.ConnectionCallback() {
 
         @Override
         public void onConnected() {
-            Log.i(TAG,"onConnected entered");
+            Log.i(TAG, "onConnected entered");
 
             // Get the token for the MediaSession
             MediaSessionCompat.Token token = mMediaBrowser.getSessionToken();
@@ -89,7 +73,7 @@ public class MediaPlayerActivity extends AppCompatActivity {
 
             buildTransportControls();
 
-            Log.i(TAG,"onConnected exit");
+            Log.i(TAG, "onConnected exit");
         }
 
         @Override
@@ -106,7 +90,7 @@ public class MediaPlayerActivity extends AppCompatActivity {
     private MediaControllerCompat.Callback mControllerCallback = new MediaControllerCompat.Callback() {
         @Override
         public void onPlaybackStateChanged(PlaybackStateCompat state) {
-            switch(state.getState()){
+            switch (state.getState()) {
                 case PlaybackStateCompat.STATE_PLAYING:
                     mPlayPause.setImageResource(R.drawable.pause);
                     break;
@@ -129,7 +113,9 @@ public class MediaPlayerActivity extends AppCompatActivity {
 
         @Override
         public void onMetadataChanged(MediaMetadataCompat metadata) {
-            mSongTitle.setText(metadata.getDescription().getTitle());
+            MediaDescriptionCompat description = metadata.getDescription();
+            mSongTitle.setText(description.getTitle());
+            setAlbumArt(description);
             mSeekBar.setMax((int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION));
         }
     };
@@ -138,12 +124,12 @@ public class MediaPlayerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_media_player);
-        Log.i(TAG,"onCreate called");
+        Log.i(TAG, "onCreate called");
 
         mMediaBrowser = new MediaBrowserCompat(this,
-                    new ComponentName(this, MediaPlaybackService.class),
-                    mConnectionCallbacks,
-                    null);
+                new ComponentName(this, MediaPlaybackService.class),
+                mConnectionCallbacks,
+                null);
     }
 
     private void updateSeekBarState(PlaybackStateCompat state) {
@@ -156,7 +142,7 @@ public class MediaPlayerActivity extends AppCompatActivity {
         mAlbumArt = findViewById(R.id.iv_art_media);
         mSongTitle = findViewById(R.id.tv_title_media);
         mSeekBar = findViewById(R.id.sb_media);
-        mButton = findViewById(R.id.favorite_media);
+        mLikeUnlike = findViewById(R.id.favorite_media);
         AdView adView = findViewById(R.id.adView);
         initializeSeekBar();
 
@@ -168,21 +154,21 @@ public class MediaPlayerActivity extends AppCompatActivity {
         mSongViewModel.getAllSongs().observe(this, new Observer<List<Song>>() {
             @Override
             public void onChanged(@Nullable List<Song> songs) {
-                Log.i(TAG,"list size: " + songs.size());
+                Log.i(TAG, "list size: " + songs.size());
                 mFavoriteSongList = songs;
                 isFavorite = mFavoriteSongList.contains(mSong);
                 updateState();
             }
         });
 
-        mButton.setOnClickListener(new View.OnClickListener() {
+        mLikeUnlike.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Analytics.logEvent(MediaPlayerActivity.this,"LIKE_UNLIKE",null);
-                if(!isFavorite){
+                Analytics.logEvent(MediaPlayerActivity.this, "LIKE_UNLIKE", null);
+                if (!isFavorite) {
                     mSongViewModel.insert(mSong);
 
-                }else{
+                } else {
                     mSongViewModel.deleteSong(mSong.getId());
                 }
                 isFavorite = !isFavorite;
@@ -204,30 +190,23 @@ public class MediaPlayerActivity extends AppCompatActivity {
         MediaMetadataCompat metadata = mediaController.getMetadata();
         PlaybackStateCompat pbState = mediaController.getPlaybackState();
 
-        if( pbState.getState() == (PlaybackStateCompat.STATE_PLAYING | PlaybackStateCompat.STATE_BUFFERING)){
+        if (pbState.getState() == (PlaybackStateCompat.STATE_PLAYING | PlaybackStateCompat.STATE_BUFFERING)) {
             mPlayPause.setImageResource(R.drawable.pause);
-        }else{
+        } else {
             mPlayPause.setImageResource(R.drawable.play);
         }
         MediaDescriptionCompat description = metadata.getDescription();
         mSongTitle.setText(description.getTitle());
 
-        Bitmap bitmap = null;
-        try {
-            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), description.getIconUri());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        mAlbumArt.setImageBitmap(bitmap);
+        setAlbumArt(description);
 
         int maxWithoutCasting = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
         mSeekBar.setMax(maxWithoutCasting);
 
-        Log.i(TAG,"maxWithoutCasting: "+ maxWithoutCasting);
-        Log.i(TAG,"maxWithCasting: "+ mSeekBar.getMax());
+        Log.i(TAG, "maxWithoutCasting: " + maxWithoutCasting);
+        Log.i(TAG, "maxWithCasting: " + mSeekBar.getMax());
 
-        Log.i(TAG,"Current playback state: "+pbState.getState());
+        Log.i(TAG, "Current playback state: " + pbState.getState());
 
         // Register a Callback to stay in sync
         mediaController.registerCallback(mControllerCallback);
@@ -237,20 +216,20 @@ public class MediaPlayerActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //Play method
-                if(mMediaBrowser.isConnected()){
+                if (mMediaBrowser.isConnected()) {
                     int state = MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getPlaybackState().getState();
 
-                    switch (state){
+                    switch (state) {
                         case PlaybackStateCompat.STATE_NONE:
-                            Log.i(TAG,"STATE_NONE");
+                            Log.i(TAG, "STATE_NONE");
                             MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().play();
                             break;
                         case PlaybackStateCompat.STATE_PAUSED:
-                            Log.i(TAG,"STATE_PAUSED");
+                            Log.i(TAG, "STATE_PAUSED");
                             MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().play();
                             break;
                         case PlaybackStateCompat.STATE_PLAYING:
-                            Log.i(TAG,"STATE_PLAYING");
+                            Log.i(TAG, "STATE_PLAYING");
                             MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().pause();
                             break;
                     }
@@ -259,11 +238,22 @@ public class MediaPlayerActivity extends AppCompatActivity {
         });
     }
 
-        private void updateState() {
-        if(isFavorite){
-            mButton.setText("unlike");
-        }else{
-            mButton.setText("like");
+    private void setAlbumArt(MediaDescriptionCompat description) {
+        Bitmap bitmap = null;
+        try {
+            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), description.getIconUri());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        mAlbumArt.setImageBitmap(bitmap);
+    }
+
+    private void updateState() {
+        if (isFavorite) {
+            mLikeUnlike.setImageResource(R.drawable.ic_favorite_red_48dp);
+        } else {
+            mLikeUnlike.setImageResource(R.drawable.ic_favorite_border_red_48dp);
         }
     }
 
@@ -278,7 +268,7 @@ public class MediaPlayerActivity extends AppCompatActivity {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(fromUser){
+                if (fromUser) {
                     userSelectedPosition = progress;
                 }
             }
@@ -292,46 +282,46 @@ public class MediaPlayerActivity extends AppCompatActivity {
     }
 
     public void previousSong(View view) {
-        Log.i(TAG,"previousSong");
+        Log.i(TAG, "previousSong");
         MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().skipToPrevious();
     }
 
     public void nextSong(View view) {
-        Log.i(TAG,"nextSong");
+        Log.i(TAG, "nextSong");
         MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().skipToNext();
     }
 
     public void stopService(View view) {
-        if(mMediaBrowser.isConnected()){
+        if (mMediaBrowser.isConnected()) {
             MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().stop();
         }
-        Log.i(TAG,"stopService called");
+        Log.i(TAG, "stopService called");
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Log.i(TAG,"onStart called");
+        Log.i(TAG, "onStart called");
         mMediaBrowser.connect();
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
-        Log.i(TAG,"onResume called");
+        Log.i(TAG, "onResume called");
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     @Override
-    protected void onPause(){
+    protected void onPause() {
         super.onPause();
-        Log.i(TAG,"onPause called");
+        Log.i(TAG, "onPause called");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.i(TAG,"onStop called");
+        Log.i(TAG, "onStop called");
         if (MediaControllerCompat.getMediaController(MediaPlayerActivity.this) != null) {
             MediaControllerCompat.getMediaController(MediaPlayerActivity.this).unregisterCallback(mControllerCallback);
         }
@@ -341,14 +331,14 @@ public class MediaPlayerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.i(TAG,"onDestroy called");
+        Log.i(TAG, "onDestroy called");
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        Log.i(TAG,"onBackPressed called");
-       // moveTaskToBack(true);
+        Log.i(TAG, "onBackPressed called");
+        // moveTaskToBack(true);
     }
 
     @Override

@@ -20,18 +20,16 @@
         android:layout_alignParentTop="true"
         android:scaleType="centerCrop" />
 
-    <Button
+    <ImageView
         android:id="@+id/favorite_media"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_below="@id/iv_art_media"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
         android:layout_marginRight="16dp"
-        android:text="Here"
-        android:textSize="32sp"
         android:layout_marginEnd="16dp" />
 
     <ImageView
