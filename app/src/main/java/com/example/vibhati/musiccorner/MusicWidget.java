@@ -7,12 +7,16 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.squareup.picasso.Picasso;
+
+import java.io.IOException;
 
 /**
  * Implementation of App Widget functionality.
@@ -35,7 +39,18 @@ public class MusicWidget extends AppWidgetProvider {
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.music_widget);
 
-        views.setImageViewUri(R.id.widget_album_art,Uri.parse(albumArtUri));
+        Bitmap bitmap = null;
+        try {
+             bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse(albumArtUri));
+        } catch (IOException e) {
+            e.printStackTrace();
+        };
+
+        if(bitmap == null){
+            views.setImageViewResource(R.id.widget_album_art,R.drawable.round_music_symbol);
+        }else {
+            views.setImageViewBitmap(R.id.widget_album_art,bitmap);
+        }
         views.setTextViewText(R.id.widget_title,songTitle);
         if(isPlaying){
             views.setImageViewResource(R.id.widget_play,R.drawable.pause);

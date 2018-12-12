@@ -69,7 +69,7 @@
             <ImageView
                 android:id="@+id/iv_previous_main"
                 android:layout_width="0dp"
-                android:layout_height="20dp"
+                android:layout_height="24dp"
                 android:layout_weight="1"
                 android:onClick="previousSong"
                 android:src="@drawable/previous"
@@ -78,7 +78,7 @@
             <ImageView
                 android:id="@+id/play_pause_main"
                 android:layout_width="0dp"
-                android:layout_height="20dp"
+                android:layout_height="24dp"
                 android:layout_weight="1"
                 android:src="@drawable/play"
                 android:contentDescription="@string/play_and_pause" />
@@ -86,7 +86,7 @@
             <ImageView
                 android:id="@+id/iv_next_main"
                 android:layout_width="0dp"
-                android:layout_height="20dp"
+                android:layout_height="24dp"
                 android:layout_weight="1"
                 android:onClick="nextSong"
                 android:src="@drawable/next"

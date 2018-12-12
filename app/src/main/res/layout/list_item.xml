@@ -4,39 +4,44 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="8dp">
+
     <ImageView
         android:id="@+id/iv_main_thumbnail"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        tools:src="@color/design_default_color_primary"
         android:layout_alignParentStart="true"
-        android:contentDescription="@string/album_art" />
+        android:layout_alignParentTop="true"
+        android:contentDescription="@string/album_art"
+        tools:src="@color/design_default_color_primary" />
 
     <TextView
         android:id="@+id/tv_main_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="Beautiful"
-        android:layout_toRightOf="@id/iv_main_thumbnail"
-        android:layout_toEndOf="@id/iv_main_thumbnail"
-        android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:layout_toEndOf="@id/iv_main_thumbnail"
+        android:layout_toRightOf="@id/iv_main_thumbnail"
+        android:ellipsize="end"
+        android:maxLines="1"
         android:textSize="18sp"
-        android:textStyle="bold"/>
+        android:textStyle="bold"
+        tools:text="Beautiful" />
 
     <TextView
         android:id="@+id/tv_main_artist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="Eminem"
-        android:textSize="16sp"
-        android:layout_toRightOf="@id/iv_main_thumbnail"
-        android:layout_toEndOf="@id/iv_main_thumbnail"
         android:layout_below="@id/tv_main_title"
+        android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp" />
+        android:layout_toEndOf="@id/iv_main_thumbnail"
+        android:layout_toRightOf="@id/iv_main_thumbnail"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="16sp"
+        tools:text="Eminem" />
 
 </RelativeLayout>

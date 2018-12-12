@@ -233,7 +233,11 @@ public class MediaPlayerActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        mAlbumArt.setImageBitmap(bitmap);
+        if(bitmap == null){
+            mAlbumArt.setImageResource(R.drawable.iconfinder_itunes);
+        }else {
+            mAlbumArt.setImageBitmap(bitmap);
+        }
     }
 
     private void updateState() {

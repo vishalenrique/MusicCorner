@@ -207,7 +207,11 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
             e.printStackTrace();
         }
 
-        mAlbumArt.setImageBitmap(bitmap);
+        if(bitmap == null){
+            mAlbumArt.setImageResource(R.drawable.round_music_symbol);
+        }else {
+            mAlbumArt.setImageBitmap(bitmap);
+        }
     }
 
     private void initializeSeekBar() {

@@ -239,25 +239,25 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
                 .setContentIntent(PendingIntent.getActivity(context,345,new Intent(context,SongsActivity.class),0))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_STOP))
-                .setSmallIcon(R.drawable.play)
+                .setSmallIcon(R.drawable.play_icon)
                 .setColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
 
                 builder.addAction(new NotificationCompat.Action(
-                R.drawable.previous, context.getString(R.string.skip_to_previous),
+                R.drawable.previous_icon, context.getString(R.string.skip_to_previous),
                 MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)));
 
                 if(controller.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
                     // Add a pause button
                 builder.addAction(new NotificationCompat.Action(
-                            R.drawable.pause, context.getString(R.string.pause),
+                            R.drawable.pause_icon, context.getString(R.string.pause),
                             MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
-                }else{
+                }else if(controller.getPlaybackState().getState() == PlaybackStateCompat.STATE_PAUSED){
                     builder.addAction(new NotificationCompat.Action(
-                            R.drawable.play, context.getString(R.string.play),
+                            R.drawable.play_icon, context.getString(R.string.play),
                             MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
                 }
                 builder.addAction(new NotificationCompat.Action(
-                        R.drawable.next, context.getString(R.string.skip_to_next),
+                        R.drawable.next_icon, context.getString(R.string.skip_to_next),
                         MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_SKIP_TO_NEXT)));
                 builder.setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
                         .setMediaSession(mediaSession.getSessionToken())
@@ -340,6 +340,19 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
         mMediaPlayer.reset();
         AudioManager am = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
         stopUpdatingCallbackWithPosition(true);
+
+        SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = defaultSharedPreferences.edit();
+        editor.putBoolean(MusicWidget.isPlaying,false);
+        editor.commit();
+
+        Intent intent = new Intent(this, MusicWidget.class);
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getApplication());
+        int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(getApplication(), MusicWidget.class));
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+        sendBroadcast(intent);
+
         // Abandon audio focus
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             am.abandonAudioFocusRequest(audioFocusRequest);

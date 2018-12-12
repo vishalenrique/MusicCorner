@@ -54,10 +54,10 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         try {
             Picasso.get().load(Uri.parse(song.getAlbumUri()))
                     .fit().centerCrop()
-                    .placeholder(R.drawable.play)
+                    .placeholder(R.drawable.round_music_symbol)
                     .into(songViewHolder.artImageView);
         } catch (Exception e) {
-            Log.e("Exception", e.toString());
+            Log.e(mContext.getString(R.string.exception), e.toString());
         }
 
         final int currentPosition = position;

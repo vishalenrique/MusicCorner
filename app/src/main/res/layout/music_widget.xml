@@ -23,6 +23,7 @@
         android:layout_toEndOf="@id/widget_album_art"
         android:layout_toRightOf="@id/widget_album_art"
         android:ellipsize="end"
+        android:textColor="#FFFFFF"
         android:maxLines="1"
         android:textSize="18sp" />
 
@@ -38,23 +39,23 @@
 
         <ImageView
             android:id="@+id/widget_previous"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_weight="1"
             android:contentDescription="@string/previous_song"
             android:src="@drawable/previous" />
 
         <ImageView
             android:id="@+id/widget_play"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_weight="1"
             android:contentDescription="@string/play_and_pause" />
 
         <ImageView
             android:id="@+id/widget_next"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_weight="1"
             android:contentDescription="@string/next_song"
             android:src="@drawable/next" />
