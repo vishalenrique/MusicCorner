@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SongsPagerAdapter extends FragmentPagerAdapter {
-    String[] titles = {"Songs","Favorites"};
-
     private final List<Fragment> mFragmentList = new ArrayList<>();
     private final List<String> mFragmentTitleList = new ArrayList<>();
 

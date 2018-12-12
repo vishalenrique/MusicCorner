@@ -42,7 +42,6 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
     @Override
     public SongViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(mContext).inflate(R.layout.list_item, viewGroup, false);
-
         SongViewHolder songViewHolder = new SongViewHolder(view);
         return songViewHolder;
     }
@@ -52,7 +51,6 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         final Song song = mCursor.get(position);
         songViewHolder.titleTextView.setText(song.getTitle());
         songViewHolder.artistTextView.setText(song.getArtist());
-
         try {
             Picasso.get().load(Uri.parse(song.getAlbumUri()))
                     .fit().centerCrop()
@@ -87,7 +85,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
        TextView titleTextView;
        TextView artistTextView;
 
-       public SongViewHolder(@NonNull View itemView) {
+       SongViewHolder(@NonNull View itemView) {
            super(itemView);
            titleTextView = itemView.findViewById(R.id.tv_main_title);
            artistTextView = itemView.findViewById(R.id.tv_main_artist);

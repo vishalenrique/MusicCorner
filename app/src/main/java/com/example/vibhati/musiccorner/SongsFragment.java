@@ -20,7 +20,7 @@ public class SongsFragment extends Fragment implements SongAdapter.ClickListener
     private static final String SCROLL_POSITION = "scrollPosition";
     private RecyclerView mRecyclerView;
     private SongAdapter mAdapter;
-    private static final String TAG = "SongsFragment";
+    private static final String TAG = SongsFragment.class.getSimpleName();
     private ArrayList<Song> songList;
 
     public OnSongClickListener mSongClickListener;
@@ -55,7 +55,6 @@ public class SongsFragment extends Fragment implements SongAdapter.ClickListener
 
     private void updateSongs() {
         songList = MediaLibrary.getData(getActivity());
-        Log.i(TAG,"songsList" + songList.size());
         mAdapter.dataChanged(songList);
     }
 }

@@ -15,7 +15,7 @@ public abstract class SongRoomDatabase extends RoomDatabase {
             synchronized (SongRoomDatabase.class){
                 if(songRoomDatabase == null){
                     songRoomDatabase = Room.databaseBuilder(context.getApplicationContext(),
-                            SongRoomDatabase.class,"song_database")
+                            SongRoomDatabase.class,context.getString(R.string.song_database_name))
                             .fallbackToDestructiveMigration()
                             .build();
                 }

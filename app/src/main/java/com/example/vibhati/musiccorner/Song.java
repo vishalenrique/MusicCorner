@@ -23,13 +23,6 @@ public class Song implements Parcelable {
 
     private long duration;
 
-//    public Song(@NonNull long id, String title, String artist, String albumUri) {
-//        this.id = id;
-//        this.title = title;
-//        this.artist = artist;
-//        this.albumUri = albumUri;
-//    }
-
     public Song(@NonNull long id, String title, String artist, String albumUri, long duration) {
         this.id = id;
         this.title = title;
@@ -91,38 +84,6 @@ public class Song implements Parcelable {
     public void setArtist(String artist) {
         this.artist = artist;
     }
-
-//    @Override
-//    public int describeContents() {
-//        return 0;
-//    }
-//
-//    @Override
-//    public void writeToParcel(Parcel dest, int flags) {
-//        dest.writeLong(this.id);
-//        dest.writeString(this.title);
-//        dest.writeString(this.artist);
-//        dest.writeString(this.albumUri);
-//    }
-//
-//    protected Song(Parcel in) {
-//        this.id = in.readLong();
-//        this.title = in.readString();
-//        this.artist = in.readString();
-//        this.albumUri = in.readString();
-//    }
-//
-//    public static final Creator<Song> CREATOR = new Creator<Song>() {
-//        @Override
-//        public Song createFromParcel(Parcel source) {
-//            return new Song(source);
-//        }
-//
-//        @Override
-//        public Song[] newArray(int size) {
-//            return new Song[size];
-//        }
-//    };
 
     @Override
     public int describeContents() {

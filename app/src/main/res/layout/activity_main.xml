@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -11,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:tabGravity="fill"
+        android:focusable="true"
         app:tabMode="fixed" />
 
     <android.support.v4.view.ViewPager
@@ -28,69 +28,69 @@
             android:id="@+id/iv_art_main"
             android:layout_width="120dp"
             android:layout_height="120dp"
-            android:onClick="nextActivity"
             android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true" />
+            android:contentDescription="@string/album_art"
+            android:onClick="nextActivity" />
 
         <TextView
             android:id="@+id/song_title_main"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginLeft="4dp"
             android:layout_alignParentTop="true"
+            android:layout_marginLeft="4dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:layout_toEndOf="@id/iv_art_main"
             android:layout_toRightOf="@id/iv_art_main"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textSize="16sp"
             android:textColor="#FFFFFF"
-            android:text="asffas"
-            android:layout_marginStart="4dp"
-            android:layout_toEndOf="@id/iv_art_main" />
+            android:textSize="16sp" />
 
-            <SeekBar
-                android:id="@+id/sb_main"
-                android:layout_toRightOf="@id/iv_art_main"
-                android:layout_below="@id/song_title_main"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:layout_toEndOf="@id/iv_art_main" />
+        <SeekBar
+            android:id="@+id/sb_main"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/song_title_main"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_toEndOf="@id/iv_art_main"
+            android:layout_toRightOf="@id/iv_art_main" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/iv_art_main"
             android:layout_below="@id/sb_main"
-            android:layout_toEndOf="@id/iv_art_main">
+            android:layout_toEndOf="@id/iv_art_main"
+            android:layout_toRightOf="@id/iv_art_main">
 
-                <ImageView
-                    android:id="@+id/iv_previous_main"
-                    android:layout_width="0dp"
-                    android:layout_height="35dp"
-                    android:src="@drawable/previous"
-                    android:layout_weight="1"
-                    android:onClick="previousSong"
-                    />
+            <ImageView
+                android:id="@+id/iv_previous_main"
+                android:layout_width="0dp"
+                android:layout_height="35dp"
+                android:layout_weight="1"
+                android:onClick="previousSong"
+                android:src="@drawable/previous"
+                android:contentDescription="@string/previous_song" />
 
-                <ImageView
-                    android:id="@+id/play_pause_main"
-                    android:layout_width="0dp"
-                    android:layout_height="35dp"
-                    android:layout_weight="1"
-                    android:src="@drawable/play"
-                    />
+            <ImageView
+                android:id="@+id/play_pause_main"
+                android:layout_width="0dp"
+                android:layout_height="35dp"
+                android:layout_weight="1"
+                android:src="@drawable/play"
+                android:contentDescription="@string/play_and_pause" />
 
-                <ImageView
-                    android:id="@+id/iv_next_main"
-                    android:layout_width="0dp"
-                    android:layout_height="35dp"
-                    android:onClick="nextSong"
-                    android:layout_weight="1"
-                    android:src="@drawable/next"
-                    />
+            <ImageView
+                android:id="@+id/iv_next_main"
+                android:layout_width="0dp"
+                android:layout_height="35dp"
+                android:layout_weight="1"
+                android:onClick="nextSong"
+                android:src="@drawable/next"
+                android:contentDescription="@string/next_song" />
         </LinearLayout>
 
     </RelativeLayout>

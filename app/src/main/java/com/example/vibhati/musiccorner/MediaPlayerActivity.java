@@ -33,9 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MediaPlayerActivity extends AppCompatActivity {
-    private static final String TAG = "MediaPlayerActivity";
-
-    // Here
+    private static final String TAG = MediaPlayerActivity.class.getSimpleName();
     ImageView mPlayPause;
     ImageView mAlbumArt;
     TextView mSongTitle;
@@ -53,8 +51,6 @@ public class MediaPlayerActivity extends AppCompatActivity {
 
         @Override
         public void onConnected() {
-            Log.i(TAG, "onConnected entered");
-
             // Get the token for the MediaSession
             MediaSessionCompat.Token token = mMediaBrowser.getSessionToken();
 
@@ -72,8 +68,6 @@ public class MediaPlayerActivity extends AppCompatActivity {
             MediaControllerCompat.setMediaController(MediaPlayerActivity.this, mediaController);
 
             buildTransportControls();
-
-            Log.i(TAG, "onConnected exit");
         }
 
         @Override
@@ -124,8 +118,6 @@ public class MediaPlayerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_media_player);
-        Log.i(TAG, "onCreate called");
-
         mMediaBrowser = new MediaBrowserCompat(this,
                 new ComponentName(this, MediaPlaybackService.class),
                 mConnectionCallbacks,
@@ -133,7 +125,6 @@ public class MediaPlayerActivity extends AppCompatActivity {
     }
 
     private void updateSeekBarState(PlaybackStateCompat state) {
-//        int bufferedPosition = (int) state.getBufferedPosition();
         mSeekBar.setProgress((int) state.getPosition());
     }
 
@@ -147,14 +138,13 @@ public class MediaPlayerActivity extends AppCompatActivity {
         initializeSeekBar();
 
         mSongList = MediaLibrary.getData(this);
-        mSong = mSongList.get(PreferenceManager.getDefaultSharedPreferences(this).getInt("position", 0));
+        mSong = mSongList.get(PreferenceManager.getDefaultSharedPreferences(this).getInt(getString(R.string.position), 0));
 
 
         mSongViewModel = ViewModelProviders.of(this).get(SongViewModel.class);
         mSongViewModel.getAllSongs().observe(this, new Observer<List<Song>>() {
             @Override
             public void onChanged(@Nullable List<Song> songs) {
-                Log.i(TAG, "list size: " + songs.size());
                 mFavoriteSongList = songs;
                 isFavorite = mFavoriteSongList.contains(mSong);
                 updateState();
@@ -164,7 +154,7 @@ public class MediaPlayerActivity extends AppCompatActivity {
         mLikeUnlike.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Analytics.logEvent(MediaPlayerActivity.this, "LIKE_UNLIKE", null);
+                Analytics.logEvent(MediaPlayerActivity.this, getString(R.string.analytics_event_like_unlike), null);
                 if (!isFavorite) {
                     mSongViewModel.insert(mSong);
 
@@ -182,8 +172,6 @@ public class MediaPlayerActivity extends AppCompatActivity {
                 .build();
         adView.loadAd(adRequest);
 
-
-//        getSupportFragmentManager().beginTransaction().replace(R.id.fl_container_main,SongsFragment.newInstance()).commit();
         MediaControllerCompat mediaController = MediaControllerCompat.getMediaController(MediaPlayerActivity.this);
 
         // Display the initial state
@@ -203,11 +191,6 @@ public class MediaPlayerActivity extends AppCompatActivity {
         int maxWithoutCasting = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
         mSeekBar.setMax(maxWithoutCasting);
 
-        Log.i(TAG, "maxWithoutCasting: " + maxWithoutCasting);
-        Log.i(TAG, "maxWithCasting: " + mSeekBar.getMax());
-
-        Log.i(TAG, "Current playback state: " + pbState.getState());
-
         // Register a Callback to stay in sync
         mediaController.registerCallback(mControllerCallback);
 
@@ -221,15 +204,12 @@ public class MediaPlayerActivity extends AppCompatActivity {
 
                     switch (state) {
                         case PlaybackStateCompat.STATE_NONE:
-                            Log.i(TAG, "STATE_NONE");
                             MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().play();
                             break;
                         case PlaybackStateCompat.STATE_PAUSED:
-                            Log.i(TAG, "STATE_PAUSED");
                             MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().play();
                             break;
                         case PlaybackStateCompat.STATE_PLAYING:
-                            Log.i(TAG, "STATE_PLAYING");
                             MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().pause();
                             break;
                     }
@@ -282,12 +262,10 @@ public class MediaPlayerActivity extends AppCompatActivity {
     }
 
     public void previousSong(View view) {
-        Log.i(TAG, "previousSong");
         MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().skipToPrevious();
     }
 
     public void nextSong(View view) {
-        Log.i(TAG, "nextSong");
         MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().skipToNext();
     }
 
@@ -295,33 +273,28 @@ public class MediaPlayerActivity extends AppCompatActivity {
         if (mMediaBrowser.isConnected()) {
             MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().stop();
         }
-        Log.i(TAG, "stopService called");
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Log.i(TAG, "onStart called");
         mMediaBrowser.connect();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i(TAG, "onResume called");
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.i(TAG, "onPause called");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.i(TAG, "onStop called");
         if (MediaControllerCompat.getMediaController(MediaPlayerActivity.this) != null) {
             MediaControllerCompat.getMediaController(MediaPlayerActivity.this).unregisterCallback(mControllerCallback);
         }
@@ -331,13 +304,11 @@ public class MediaPlayerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.i(TAG, "onDestroy called");
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        Log.i(TAG, "onBackPressed called");
         // moveTaskToBack(true);
     }
 

@@ -19,7 +19,7 @@ import com.squareup.picasso.Picasso;
  */
 public class MusicWidget extends AppWidgetProvider {
 
-    private static final String TAG = "MusicWidget";
+    private static final String TAG = MusicWidget.class.getSimpleName();
     public static final String SONG_NAME = "songName";
     public static final String isPlaying = "isPlaying";
     public static final String ALBUM_ART = "albumArt";
@@ -27,11 +27,9 @@ public class MusicWidget extends AppWidgetProvider {
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {
 
-        Log.i(TAG,"updateAppWidget called");
-
         SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String songTitle = defaultSharedPreferences.getString(SONG_NAME, "None");
-        String albumArtUri = defaultSharedPreferences.getString(ALBUM_ART, "None");
+        String songTitle = defaultSharedPreferences.getString(SONG_NAME, context.getString(R.string.none));
+        String albumArtUri = defaultSharedPreferences.getString(ALBUM_ART, context.getString(R.string.none));
         boolean isPlaying = defaultSharedPreferences.getBoolean(MusicWidget.isPlaying, false);
 
         // Construct the RemoteViews object
@@ -63,7 +61,6 @@ public class MusicWidget extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         // There may be multiple widgets active, so update all of them
-        Log.i(TAG,"onUpdate called");
         for (int appWidgetId : appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId);
         }
@@ -72,18 +69,15 @@ public class MusicWidget extends AppWidgetProvider {
     @Override
     public void onEnabled(Context context) {
         // Enter relevant functionality for when the first widget is created
-        Log.i(TAG,"onEnabled called");
     }
 
     @Override
     public void onDisabled(Context context) {
         // Enter relevant functionality for when the last widget is disabled
-        Log.i(TAG,"onDisabled called");
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.i(TAG,"onReceive called");
         super.onReceive(context, intent);
     }
 }

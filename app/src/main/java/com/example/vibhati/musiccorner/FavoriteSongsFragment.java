@@ -21,7 +21,7 @@ public class FavoriteSongsFragment extends Fragment implements SongAdapter.Click
 
     private RecyclerView mRecyclerView;
     private SongAdapter mAdapter;
-    private static final String TAG = "FavoriteSongsFragment";
+    private static final String TAG = FavoriteSongsFragment.class.getSimpleName();
     private ArrayList<Song> songList;
     public OnFavoriteSongClickListener mOnFavoriteSongClickListener;
     private SongViewModel mSongViewModel;
@@ -55,7 +55,6 @@ public class FavoriteSongsFragment extends Fragment implements SongAdapter.Click
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mAdapter);
-        //updateSongs();
         return rootView;
     }
 
@@ -64,11 +63,4 @@ public class FavoriteSongsFragment extends Fragment implements SongAdapter.Click
         super.onAttach(context);
         mOnFavoriteSongClickListener = (OnFavoriteSongClickListener) context;
     }
-
-    private void updateSongs() {
-        songList = MediaLibrary.getData(getActivity());
-        Log.i(TAG,"songsList" + songList.size());
-        mAdapter.dataChanged(songList);
-    }
-
 }

@@ -16,7 +16,7 @@ public class MediaLibrary {
     private static ArrayList<Song> songList;
 
     public static ArrayList<Song> getData(Context context){
-        Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
+        Uri sArtworkUri = Uri.parse(context.getString(R.string.album_art_uri));
         if(songList == null) {
             Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {

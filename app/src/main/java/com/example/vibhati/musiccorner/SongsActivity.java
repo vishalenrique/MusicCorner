@@ -42,9 +42,7 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
 
     ArrayList<Song> songList;
     private static final int MY_PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 1;
-    private static final String TAG = "SongsActivity";
-
-    // Here
+    private static final String TAG = SongsActivity.class.getSimpleName();
     ImageView mPlayPause;
     ImageView mAlbumArt;
     TextView mSongTitle;
@@ -56,7 +54,6 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
 
         @Override
         public void onConnected() {
-            Log.i(TAG,"onConnected entered");
 
             // Get the token for the MediaSession
             MediaSessionCompat.Token token = mMediaBrowser.getSessionToken();
@@ -75,8 +72,6 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
             MediaControllerCompat.setMediaController(SongsActivity.this, mediaController);
 
             buildTransportControls();
-
-            Log.i(TAG,"onConnected exit");
         }
 
         @Override
@@ -95,7 +90,6 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.i(TAG,"onCreate called");
 
         songList = new ArrayList<>();
 
@@ -146,7 +140,6 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
     };
 
     private void updateSeekBarState(PlaybackStateCompat state) {
-//        int bufferedPosition = (int) state.getBufferedPosition();
         mSeekBar.setProgress((int) state.getPosition());
     }
 
@@ -161,8 +154,6 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
         setupViewPagerAndTabLayout();
         updateSongs();
 
-
-//        getSupportFragmentManager().beginTransaction().replace(R.id.fl_container_main,SongsFragment.newInstance()).commit();
         MediaControllerCompat mediaController = MediaControllerCompat.getMediaController(SongsActivity.this);
 
         // Display the initial state
@@ -179,9 +170,6 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
         int maxWithoutCasting = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
         mSeekBar.setMax(maxWithoutCasting);
 
-        Log.i(TAG,"maxWithoutCasting: "+ maxWithoutCasting);
-        Log.i(TAG,"maxWithCasting: "+ mSeekBar.getMax());
-
         setAlbumArt(description);
 
         // Register a Callback to stay in sync
@@ -196,15 +184,12 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
 
                     switch (state){
                         case PlaybackStateCompat.STATE_NONE:
-                            Log.i(TAG,"STATE_NONE");
                             MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().play();
                             break;
                         case PlaybackStateCompat.STATE_PAUSED:
-                            Log.i(TAG,"STATE_PAUSED");
                             MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().play();
                             break;
                         case PlaybackStateCompat.STATE_PLAYING:
-                            Log.i(TAG,"STATE_PLAYING");
                             MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().pause();
                             break;
                     }
@@ -251,33 +236,29 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
 
     private void setupViewPagerAndTabLayout() {
         SongsPagerAdapter adapter = new SongsPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(SongsFragment.newInstance(),"Songs");
-        adapter.addFragment(FavoriteSongsFragment.newInstance(),"Favorites");
+        adapter.addFragment(SongsFragment.newInstance(),getString(R.string.fragment_name_songs));
+        adapter.addFragment(FavoriteSongsFragment.newInstance(),getString(R.string.fragment_name_favorites));
         mViewPager.setAdapter(adapter);
         mTabLayout.setupWithViewPager(mViewPager);
     }
 
     public void previousSong(View view) {
-        Log.i(TAG,"previousSong");
         MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().skipToPrevious();
     }
 
     public void nextSong(View view) {
-        Log.i(TAG,"nextSong");
-        MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().skipToNext();
+       MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().skipToNext();
     }
 
     public void stopService(View view) {
         if(mMediaBrowser.isConnected()){
             MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().stop();
         }
-        Log.i(TAG,"stopService called");
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Log.i(TAG,"onStart called");
         mMediaBrowser.connect();
     }
 
@@ -287,7 +268,6 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
         switch (requestCode) {
             case MY_PERMISSION_REQUEST_READ_EXTERNAL_STORAGE: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.i(TAG, "onRequestPermissionResult called");
                     mMediaBrowser = new MediaBrowserCompat(this,
                             new ComponentName(this, MediaPlaybackService.class),
                             mConnectionCallbacks,
@@ -299,52 +279,22 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
 
     private void updateSongs() {
         songList = MediaLibrary.getData(SongsActivity.this);
-        Log.i(TAG,"songsList" + songList.size());
     }
-
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_main, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        switch (item.getItemId()) {
-//            case R.id.action_shuffle:
-//                return true;
-//            case R.id.action_end:
-//                System.exit(0);
-//                return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
-
 
     @Override
     protected void onResume(){
         super.onResume();
-        Log.i(TAG,"onResume called");
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     @Override
     protected void onPause(){
         super.onPause();
-        Log.i(TAG,"onPause called");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.i(TAG,"onStop called");
         if (MediaControllerCompat.getMediaController(SongsActivity.this) != null) {
             MediaControllerCompat.getMediaController(SongsActivity.this).unregisterCallback(mControllerCallback);
         }
@@ -354,13 +304,11 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.i(TAG,"onDestroy called");
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        Log.i(TAG,"onBackPressed called");
         moveTaskToBack(true);
     }
 
@@ -396,24 +344,22 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
         if(mMediaBrowser.isConnected()) {
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean("isFavoriteMode",false);
-            editor.putInt("position",position);
+            editor.putBoolean(getString(R.string.isFavoriteMode),false);
+            editor.putInt(getString(R.string.position),position);
             editor.apply();
-            //Toast.makeText(this, song.getTitle(), Toast.LENGTH_SHORT).show();
             MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().play();
         }else{
-            Toast.makeText(this, "Service is not connected", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.service_unavailable_message, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onFavoriteSongClicked(Song song, int position) {
-        Analytics.logEvent(SongsActivity.this,"SONG_PLAYED_FROM_FAVORITES",null);
-        Log.i(TAG,"onFavoriteSongClicked called");
+        Analytics.logEvent(SongsActivity.this,getString(R.string.analytics_song_from_favorites),null);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("isFavoriteMode",true);
-        editor.putInt("position",position);
+        editor.putBoolean(getString(R.string.isFavoriteMode),true);
+        editor.putInt(getString(R.string.position),position);
         editor.apply();
         MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().play();
     }

@@ -13,4 +13,22 @@
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_widget">Add widget</string>
     <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="album_art">Album Art</string>
+    <string name="previous_song">Previous Song</string>
+    <string name="play_and_pause">Play and Pause</string>
+    <string name="next_song">Next Song</string>
+    <string name="like_and_unlike">Like and Unlike</string>
+    <string name="shuffle">Shuffle</string>
+    <string name="album_art_uri">content://media/external/audio/albumart</string>
+    <string name="metadata_unavailable_description">MediaDescriptionCompat: null</string>
+    <string name="none">None</string>
+    <string name="song_database_name">song_database</string>
+    <string name="fragment_name_songs">Songs</string>
+    <string name="fragment_name_favorites">Favorites</string>
+    <string name="isFavoriteMode">isFavoriteMode</string>
+    <string name="position">position</string>
+    <string name="service_unavailable_message">Service is not connected</string>
+    <string name="analytics_song_from_favorites">SONG_PLAYED_FROM_FAVORITES</string>
+    <string name="analytics_event_like_unlike">LIKE_UNLIKE</string>
+    <string name="error_message">Error setting data source</string>
 </resources>
