@@ -7,7 +7,20 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 
 public class Analytics {
 
-    public static void logEvent(Context context, String eventName, Bundle bundle){
+    private static Analytics instance;
+
+    private Analytics() {
+    }
+
+    static{
+        instance = new Analytics();
+    }
+
+    public static Analytics getInstance(){
+        return instance;
+    }
+
+    public void logEvent(Context context, String eventName, Bundle bundle){
         FirebaseAnalytics.getInstance(context).logEvent(eventName,bundle);
     }
 }

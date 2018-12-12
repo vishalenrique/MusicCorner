@@ -154,7 +154,7 @@ public class MediaPlayerActivity extends AppCompatActivity {
         mLikeUnlike.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Analytics.logEvent(MediaPlayerActivity.this, getString(R.string.analytics_event_like_unlike), null);
+                Analytics.getInstance().logEvent(MediaPlayerActivity.this, getString(R.string.analytics_event_like_unlike), null);
                 if (!isFavorite) {
                     mSongViewModel.insert(mSong);
 

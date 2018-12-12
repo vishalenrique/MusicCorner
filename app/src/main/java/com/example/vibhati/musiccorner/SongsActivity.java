@@ -355,7 +355,7 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
 
     @Override
     public void onFavoriteSongClicked(Song song, int position) {
-        Analytics.logEvent(SongsActivity.this,getString(R.string.analytics_song_from_favorites),null);
+        Analytics.getInstance().logEvent(SongsActivity.this,getString(R.string.analytics_song_from_favorites),null);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(getString(R.string.isFavoriteMode),true);
