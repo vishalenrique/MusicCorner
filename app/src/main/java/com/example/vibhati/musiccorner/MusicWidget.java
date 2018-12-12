@@ -36,13 +36,13 @@ public class MusicWidget extends AppWidgetProvider {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.music_widget);
 
         views.setImageViewUri(R.id.widget_album_art,Uri.parse(albumArtUri));
-
         views.setTextViewText(R.id.widget_title,songTitle);
         if(isPlaying){
-            views.setTextViewText(R.id.widget_play,"pause");
+            views.setImageViewResource(R.id.widget_play,R.drawable.pause);
         }else{
-            views.setTextViewText(R.id.widget_play,"play");
+            views.setImageViewResource(R.id.widget_play,R.drawable.play);
         }
+
         Intent intentPlay = new Intent(context, MediaPlaybackService.class);
         intentPlay.setAction(MediaPlaybackService.ACTION_WIDGET_PLAY);
         views.setOnClickPendingIntent(R.id.widget_play, PendingIntent.getService(context,23,intentPlay,PendingIntent.FLAG_UPDATE_CURRENT));
@@ -54,6 +54,7 @@ public class MusicWidget extends AppWidgetProvider {
         Intent intentNext = new Intent(context, MediaPlaybackService.class);
         intentNext.setAction(MediaPlaybackService.ACTION_WIDGET_NEXT);
         views.setOnClickPendingIntent(R.id.widget_next, PendingIntent.getService(context,25,intentNext,PendingIntent.FLAG_UPDATE_CURRENT));
+
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
