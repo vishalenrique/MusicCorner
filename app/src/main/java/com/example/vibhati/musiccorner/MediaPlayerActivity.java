@@ -119,7 +119,7 @@ public class MediaPlayerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_media_player);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -150,9 +150,11 @@ public class MediaPlayerActivity extends AppCompatActivity {
         mSongViewModel.getAllSongs().observe(this, new Observer<List<Song>>() {
             @Override
             public void onChanged(@Nullable List<Song> songs) {
-                mFavoriteSongList = songs;
-                isFavorite = mFavoriteSongList.contains(mSong);
-                updateState();
+                if (songs != null) {
+                    mFavoriteSongList = songs;
+                    isFavorite = mFavoriteSongList.contains(mSong);
+                    updateState();
+                }
             }
         });
 
@@ -236,9 +238,9 @@ public class MediaPlayerActivity extends AppCompatActivity {
 
     private void updateState() {
         if (isFavorite) {
-            mLikeUnlike.setImageResource(R.drawable.ic_favorite_red_48dp);
+            mLikeUnlike.setImageResource(R.drawable.heart);
         } else {
-            mLikeUnlike.setImageResource(R.drawable.ic_favorite_border_red_48dp);
+            mLikeUnlike.setImageResource(R.drawable.heart_outline);
         }
     }
 
