@@ -49,83 +49,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MediaPlayerActivity extends AppCompatActivity {
-
-//    private static final String EXTRA_SONG = "extraSong";
-//    private SongViewModel mSongViewModel;
-//    private boolean isFavorite;
-//    private Button mButton;
-//    private Song mSong;
-//    private ArrayList<Song> mSongList;
-//    private List<Song> mFavoriteSongList;
-//    private static final String TAG = "MediaPlayerActivity";
-//
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_media_player);
-//
-//
-//        AdView adView = findViewById(R.id.adView);
-//        AdRequest adRequest = new AdRequest.Builder()
-//                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-//                .build();
-//
-//        adView.loadAd(adRequest);
-//
-//        mButton = findViewById(R.id.favorite_media_player);
-//
-//        mSongList = MediaLibrary.getData(this);
-//        mSong = mSongList.get(PreferenceManager.getDefaultSharedPreferences(this).getInt("position", 0));
-//
-//        Log.i(TAG,"from general"+mSong.toString());
-//
-//        mSongViewModel = ViewModelProviders.of(this).get(SongViewModel.class);
-//        mSongViewModel.getAllSongs().observe(this, new Observer<List<Song>>() {
-//            @Override
-//            public void onChanged(@Nullable List<Song> songs) {
-//                Log.i(TAG,"list size: " + songs.size());
-//                mFavoriteSongList = songs;
-//                isFavorite = mFavoriteSongList.contains(mSong);
-//
-//                for(Song song:songs)
-//                    Log.i(TAG,"from list"+song.toString());
-//                updateState();
-//            }
-//        });
-//
-//        if(mFavoriteSongList == null){
-//            Log.i(TAG,"empty");
-//        }
-//        if(mSong == null){
-//            Log.i(TAG,"empty song");
-//        }
-//
-//        mButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Analytics.logEvent(MediaPlayerActivity.this,"LIKE_UNLIKE",null);
-//                if(!isFavorite){
-//                    mSongViewModel.insert(mSong);
-//
-//                }else{
-//                    mSongViewModel.deleteSong(mSong.getId());
-//                }
-//                isFavorite = !isFavorite;
-//                updateState();
-//            }
-//        });
-//
-//    }
-//
-//    private void updateState() {
-//        if(isFavorite){
-//            mButton.setText("unlike");
-//        }else{
-//            mButton.setText("like");
-//        }
-//    }
-
-    ArrayList<Song> songList;
     private static final String TAG = "MediaPlayerActivity";
 
     // Here
@@ -133,7 +56,15 @@ public class MediaPlayerActivity extends AppCompatActivity {
     ImageView mAlbumArt;
     TextView mSongTitle;
     SeekBar mSeekBar;
+    Button mButton;
+    private ArrayList<Song> mSongList;
+    private Song mSong;
     private MediaBrowserCompat mMediaBrowser;
+    private SongViewModel mSongViewModel;
+    private List<Song> mFavoriteSongList;
+    private boolean isFavorite;
+    private boolean mUserIsSeeking;
+
     private MediaBrowserCompat.ConnectionCallback mConnectionCallbacks = new MediaBrowserCompat.ConnectionCallback (){
 
         @Override
@@ -203,15 +134,12 @@ public class MediaPlayerActivity extends AppCompatActivity {
         }
     };
 
-    private boolean mUserIsSeeking = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_media_player);
         Log.i(TAG,"onCreate called");
 
-        songList = new ArrayList<>();
         mMediaBrowser = new MediaBrowserCompat(this,
                     new ComponentName(this, MediaPlaybackService.class),
                     mConnectionCallbacks,
@@ -228,8 +156,45 @@ public class MediaPlayerActivity extends AppCompatActivity {
         mAlbumArt = findViewById(R.id.iv_art_media);
         mSongTitle = findViewById(R.id.tv_title_media);
         mSeekBar = findViewById(R.id.sb_media);
+        mButton = findViewById(R.id.favorite_media);
+        AdView adView = findViewById(R.id.adView);
         initializeSeekBar();
-        updateSongs();
+
+        mSongList = MediaLibrary.getData(this);
+        mSong = mSongList.get(PreferenceManager.getDefaultSharedPreferences(this).getInt("position", 0));
+
+
+        mSongViewModel = ViewModelProviders.of(this).get(SongViewModel.class);
+        mSongViewModel.getAllSongs().observe(this, new Observer<List<Song>>() {
+            @Override
+            public void onChanged(@Nullable List<Song> songs) {
+                Log.i(TAG,"list size: " + songs.size());
+                mFavoriteSongList = songs;
+                isFavorite = mFavoriteSongList.contains(mSong);
+                updateState();
+            }
+        });
+
+        mButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Analytics.logEvent(MediaPlayerActivity.this,"LIKE_UNLIKE",null);
+                if(!isFavorite){
+                    mSongViewModel.insert(mSong);
+
+                }else{
+                    mSongViewModel.deleteSong(mSong.getId());
+                }
+                isFavorite = !isFavorite;
+                updateState();
+            }
+        });
+
+
+        AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .build();
+        adView.loadAd(adRequest);
 
 
 //        getSupportFragmentManager().beginTransaction().replace(R.id.fl_container_main,SongsFragment.newInstance()).commit();
@@ -294,6 +259,14 @@ public class MediaPlayerActivity extends AppCompatActivity {
         });
     }
 
+        private void updateState() {
+        if(isFavorite){
+            mButton.setText("unlike");
+        }else{
+            mButton.setText("like");
+        }
+    }
+
     private void initializeSeekBar() {
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int userSelectedPosition = 0;
@@ -341,37 +314,6 @@ public class MediaPlayerActivity extends AppCompatActivity {
         Log.i(TAG,"onStart called");
         mMediaBrowser.connect();
     }
-
-    private void updateSongs() {
-        songList = MediaLibrary.getData(MediaPlayerActivity.this);
-        Log.i(TAG,"songsList" + songList.size());
-    }
-
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_main, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        switch (item.getItemId()) {
-//            case R.id.action_shuffle:
-//                return true;
-//            case R.id.action_end:
-//                System.exit(0);
-//                return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
-
 
     @Override
     protected void onResume(){
