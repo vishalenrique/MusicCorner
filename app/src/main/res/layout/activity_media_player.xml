@@ -1,25 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MediaPlayerActivity">
+    android:background="@color/colorPrimary"
+    tools:context=".MediaPlayerActivity"
+    tools:showIn="@layout/activity_media_player">
 
-    <android.support.design.widget.AppBarLayout
+
+    <ImageView
+        android:id="@+id/iv_art_media"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:scaleType="centerCrop" />
+
+    <Button
+        android:id="@+id/favorite_media"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/iv_art_media"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginRight="16dp"
+        android:text="Here"
+        android:textSize="32sp"
+        android:layout_marginEnd="16dp" />
+
+    <ImageView
+        android:id="@+id/iv_shuffle_media"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginLeft="16dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/iv_art_media"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/shuffle"
+        android:layout_marginStart="16dp" />
+
+    <ImageView
+        android:id="@+id/iv_play_media"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_above="@id/adView"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:id="@+id/tv_title_media"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/favorite_media"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="8dp"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp" />
+
+    <SeekBar
+        android:id="@+id/sb_media"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:layout_below="@id/tv_title_media"
+        android:layout_marginBottom="16dp"
+        android:layout_marginTop="16dp" />
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+    <ImageView
+        android:id="@+id/iv_previous_media"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_above="@id/adView"
+        android:layout_marginBottom="8dp"
+        android:layout_toLeftOf="@id/iv_play_media"
+        android:layout_toStartOf="@id/iv_play_media"
+        android:onClick="previousSong"
+        android:src="@drawable/previous" />
 
-    </android.support.design.widget.AppBarLayout>
+    <ImageView
+        android:id="@+id/iv_next_media"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_above="@id/adView"
+        android:layout_marginBottom="8dp"
+        android:layout_toEndOf="@id/iv_play_media"
+        android:layout_toRightOf="@id/iv_play_media"
+        android:onClick="nextSong"
+        android:src="@drawable/next" />
 
-    <include layout="@layout/content_media_player" />
 
-</android.support.design.widget.CoordinatorLayout>
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        app:adSize="BANNER"
+        app:adUnitId="@string/banner_ad_unit_id" />
+
+</RelativeLayout>

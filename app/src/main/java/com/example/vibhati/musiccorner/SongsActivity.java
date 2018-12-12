@@ -5,14 +5,17 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -27,10 +30,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class SongsActivity extends AppCompatActivity implements OnSongClickListener,FavoriteSongsFragment.OnFavoriteSongClickListener{
@@ -40,7 +45,8 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
     private static final String TAG = "SongsActivity";
 
     // Here
-    Button mPlayPause;
+    ImageView mPlayPause;
+    ImageView mAlbumArt;
     TextView mSongTitle;
     ViewPager mViewPager;
     TabLayout mTabLayout;
@@ -89,8 +95,6 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
         Log.i(TAG,"onCreate called");
 
         songList = new ArrayList<>();
@@ -113,13 +117,13 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
         public void onPlaybackStateChanged(PlaybackStateCompat state) {
             switch(state.getState()){
                 case PlaybackStateCompat.STATE_PLAYING:
-                    mPlayPause.setText("Pause");
+                    mPlayPause.setImageResource(R.drawable.pause);
                     break;
                 case PlaybackStateCompat.STATE_PAUSED:
-                    mPlayPause.setText("Play");
+                    mPlayPause.setImageResource(R.drawable.play);
                     break;
                 case PlaybackStateCompat.STATE_STOPPED:
-                    mPlayPause.setText("Play");
+                    mPlayPause.setImageResource(R.drawable.play);
                     break;
                 case PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS:
                     updateSeekBarState(state);
@@ -134,7 +138,9 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
 
         @Override
         public void onMetadataChanged(MediaMetadataCompat metadata) {
-            mSongTitle.setText(metadata.getDescription().getTitle());
+            MediaDescriptionCompat description = metadata.getDescription();
+            mSongTitle.setText(description.getTitle());
+            setAlbumArt(description);
             mSeekBar.setMax((int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION));
         }
     };
@@ -147,6 +153,7 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
     private void buildTransportControls() {
         mTabLayout = findViewById(R.id.tl_main);
         mViewPager = findViewById(R.id.vp_main);
+        mAlbumArt = findViewById(R.id.iv_art_main);
         mPlayPause = findViewById(R.id.play_pause_main);
         mSongTitle = findViewById(R.id.song_title_main);
         mSeekBar = findViewById(R.id.sb_main);
@@ -163,16 +170,19 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
         PlaybackStateCompat pbState = mediaController.getPlaybackState();
 
         if( pbState.getState() == (PlaybackStateCompat.STATE_PLAYING | PlaybackStateCompat.STATE_BUFFERING)){
-            mPlayPause.setText("Pause");
+            mPlayPause.setImageResource(R.drawable.pause);
         }else{
-            mPlayPause.setText("Play");
+            mPlayPause.setImageResource(R.drawable.play);
         }
-        mSongTitle.setText(metadata.getDescription().getTitle());
+        MediaDescriptionCompat description = metadata.getDescription();
+        mSongTitle.setText(description.getTitle());
         int maxWithoutCasting = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
         mSeekBar.setMax(maxWithoutCasting);
 
         Log.i(TAG,"maxWithoutCasting: "+ maxWithoutCasting);
         Log.i(TAG,"maxWithCasting: "+ mSeekBar.getMax());
+
+        setAlbumArt(description);
 
         // Register a Callback to stay in sync
         mediaController.registerCallback(mControllerCallback);
@@ -181,16 +191,38 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
         mPlayPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Play method
                 if(mMediaBrowser.isConnected()){
-                    if(TextUtils.equals(mPlayPause.getText().toString(),"Play")) {
-                        MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().play();
-                    }else{
-                        MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().pause();
+                    int state = MediaControllerCompat.getMediaController(SongsActivity.this).getPlaybackState().getState();
+
+                    switch (state){
+                        case PlaybackStateCompat.STATE_NONE:
+                            Log.i(TAG,"STATE_NONE");
+                            MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().play();
+                            break;
+                        case PlaybackStateCompat.STATE_PAUSED:
+                            Log.i(TAG,"STATE_PAUSED");
+                            MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().play();
+                            break;
+                        case PlaybackStateCompat.STATE_PLAYING:
+                            Log.i(TAG,"STATE_PLAYING");
+                            MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().pause();
+                            break;
                     }
                 }
+
             }
         });
+    }
+
+    private void setAlbumArt(MediaDescriptionCompat description) {
+        Bitmap bitmap = null;
+        try {
+            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), description.getIconUri());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        mAlbumArt.setImageBitmap(bitmap);
     }
 
     private void initializeSeekBar() {
@@ -270,30 +302,30 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
         Log.i(TAG,"songsList" + songList.size());
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        switch (item.getItemId()) {
-            case R.id.action_shuffle:
-                return true;
-            case R.id.action_end:
-                System.exit(0);
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.menu_main, menu);
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        // Handle action bar item clicks here. The action bar will
+//        // automatically handle clicks on the Home/Up button, so long
+//        // as you specify a parent activity in AndroidManifest.xml.
+//        int id = item.getItemId();
+//
+//        switch (item.getItemId()) {
+//            case R.id.action_shuffle:
+//                return true;
+//            case R.id.action_end:
+//                System.exit(0);
+//                return true;
+//        }
+//
+//        return super.onOptionsItemSelected(item);
+//    }
 
 
     @Override
