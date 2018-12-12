@@ -6,16 +6,88 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".MediaPlayerActivity"
+    android:background="@color/colorPrimary"
     tools:showIn="@layout/activity_media_player">
+    
+    
+    <ImageView
+        android:id="@+id/iv_art_media"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:scaleType="centerCrop"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true" />
 
     <Button
-        android:id="@+id/favorite_media_player"
+        android:id="@+id/favorite_media"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="32sp"
         android:text="Here"
-        android:layout_centerInParent="true"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/iv_art_media"
        />
+    
+    <ImageView
+        android:id="@+id/iv_shuffle_media"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_below="@id/iv_art_media"
+        android:layout_alignParentLeft="true"
+        android:src="@drawable/next"
+        />
+
+    <ImageView
+        android:id="@+id/iv_play_media"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_above="@id/adView"
+        android:layout_centerHorizontal="true"/>
+
+    <TextView
+        android:id="@+id/tv_title_media"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/favorite_media"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:textSize="20sp"
+        android:textColor="#FFFFFF"
+        />
+
+    <SeekBar
+        android:id="@+id/sb_media"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_below="@id/tv_title_media"
+        android:layout_marginTop="16dp"/>
+
+    <ImageView
+        android:id="@+id/iv_previous_media"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_above="@id/adView"
+        android:layout_toLeftOf="@id/iv_play_media"
+        android:src="@drawable/previous"
+        android:onClick="previousSong"
+        android:layout_toStartOf="@id/iv_play_media" />
+
+    <ImageView
+        android:id="@+id/iv_next_media"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_above="@id/adView"
+        android:src="@drawable/next"
+        android:onClick="nextSong"
+        android:layout_toRightOf="@id/iv_play_media"
+        android:layout_toEndOf="@id/iv_play_media" />
+
 
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"

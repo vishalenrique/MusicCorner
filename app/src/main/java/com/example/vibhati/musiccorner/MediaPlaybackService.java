@@ -179,6 +179,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
         mPlaybackStateCompatBuilder.setActions(
                 PlaybackStateCompat.ACTION_SEEK_TO | PlaybackStateCompat.ACTION_SET_CAPTIONING_ENABLED | PlaybackStateCompat.ACTION_PLAY |PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS | PlaybackStateCompat.ACTION_SKIP_TO_NEXT);
 
+//        mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_PAUSED,0,1.0f);
 //        mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_NONE,0,1.0f);
 //        mPlaybackStateCompatBuilder.setBufferedPosition(0);
         setSessionToken(mMediaSession.getSessionToken());
