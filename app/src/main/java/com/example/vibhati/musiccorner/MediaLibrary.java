@@ -28,13 +28,16 @@ public class MediaLibrary {
                         (MediaStore.Audio.Media.ARTIST);
                 int albumId = cursor.getColumnIndex
                         (MediaStore.Audio.Media.ALBUM_ID);
+                int songDuration = cursor.getColumnIndex
+                        (MediaStore.Audio.Media.DURATION);
                 songList = new ArrayList<>();
                 do {
                     long thisId = cursor.getLong(idColumn);
                     String thisTitle = cursor.getString(titleColumn);
                     String thisArtist = cursor.getString(artistColumn);
                     long thisAlbumId = cursor.getLong(albumId);
-                    songList.add(new Song(thisId, thisTitle, thisArtist,  ContentUris.withAppendedId(sArtworkUri, Long.valueOf(thisAlbumId)).toString()));
+                    long thisDuration = cursor.getLong(songDuration);
+                    songList.add(new Song(thisId, thisTitle, thisArtist,  ContentUris.withAppendedId(sArtworkUri, Long.valueOf(thisAlbumId)).toString(),thisDuration));
                 }
                 while (cursor.moveToNext());
 

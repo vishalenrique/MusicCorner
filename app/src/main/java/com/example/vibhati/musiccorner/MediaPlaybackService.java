@@ -1,10 +1,8 @@
 package com.example.vibhati.musiccorner;
 
 import android.app.PendingIntent;
-import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentUris;
@@ -14,16 +12,13 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -45,6 +40,9 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class MediaPlaybackService extends MediaBrowserServiceCompat implements MediaPlayer.OnPreparedListener {
 
@@ -60,9 +58,13 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
     private SharedPreferences mDefaultSharedPreferences;
     private boolean mIsPlaying = false;
     private String mDefaultValueInPrepare = "defaultValueInPrepare";
-    ;
+    private ScheduledExecutorService mExecutor;
+    private Runnable mSeekBarPositionUpdateTask;
     private int mPosition;
     private AudioFocusRequest audioFocusRequest;
+    public static final int PLAYBACK_POSITION_REFRESH_INTERVAL_MS = 1000;
+
+
     private AudioManager.OnAudioFocusChangeListener afChangeListener = new AudioManager.OnAudioFocusChangeListener() {
         @Override
         public void onAudioFocusChange(int focusChange) {
@@ -123,6 +125,12 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
         }
 
         @Override
+        public void onSeekTo(long pos) {
+            Log.i(TAG,"onSeekTo called: " + pos);
+            seekToPosition(pos);
+        }
+
+        @Override
         public void onStop() {
            stopMusic();
             Log.i(TAG, "onStop called");
@@ -141,6 +149,13 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             Log.i(TAG, "onSkipToNext called");
         }
     };
+
+    private void seekToPosition(long pos) {
+        int newPos = (int) pos;
+        Log.i(TAG,"seekToPos called: "+newPos);
+        mMediaPlayer.seekTo(newPos);
+    }
+
     private PlaybackStateCompat.Builder mPlaybackStateCompatBuilder;
     private MediaMetadataCompat.Builder mMediaMetadataCompatBuilder;
     private List<Song> mFavoriteSongList;
@@ -162,8 +177,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
         mPlaybackStateCompatBuilder = new PlaybackStateCompat.Builder();
         mPlaybackStateCompatBuilder.setActions(
-                PlaybackStateCompat.ACTION_SET_CAPTIONING_ENABLED | PlaybackStateCompat.ACTION_PLAY |PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS | PlaybackStateCompat.ACTION_SKIP_TO_NEXT);
+                PlaybackStateCompat.ACTION_SEEK_TO | PlaybackStateCompat.ACTION_SET_CAPTIONING_ENABLED | PlaybackStateCompat.ACTION_PLAY |PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS | PlaybackStateCompat.ACTION_SKIP_TO_NEXT);
 
+//        mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_NONE,0,1.0f);
+//        mPlaybackStateCompatBuilder.setBufferedPosition(0);
         setSessionToken(mMediaSession.getSessionToken());
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
@@ -205,14 +222,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
         mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, playSong.getTitle());
         mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, playSong.getArtist());
         mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI,playSong.getAlbumUri());
+        mMediaMetadataCompatBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION,playSong.getDuration());
         mMediaSession.setMetadata(mMediaMetadataCompatBuilder.build());
 
         Log.i(TAG, "onCreate called: end ");
-    }
-
-    @Override
-    public void onPrepared(MediaPlayer mp) {
-        mMediaPlayer.start();
     }
 
     public static NotificationCompat.Builder from(Context context, MediaSessionCompat mediaSession) {
@@ -274,6 +287,56 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
         prepare();
     }
 
+    void startUpdatingCallbackWithPosition() {
+        if (mExecutor == null) {
+            mExecutor = Executors.newSingleThreadScheduledExecutor();
+        }
+        if (mSeekBarPositionUpdateTask == null) {
+            mSeekBarPositionUpdateTask = new Runnable() {
+                @Override
+                public void run() {
+                    updateProgressCallbackTask();
+                }
+            };
+        }
+        mExecutor.scheduleAtFixedRate(
+                mSeekBarPositionUpdateTask,
+                0,
+                PLAYBACK_POSITION_REFRESH_INTERVAL_MS,
+                TimeUnit.MILLISECONDS
+        );
+    }
+
+    private void stopUpdatingCallbackWithPosition(boolean resetUIPlaybackPosition) {
+        if (mExecutor != null) {
+            mExecutor.shutdownNow();
+            mExecutor = null;
+            mSeekBarPositionUpdateTask = null;
+            if (resetUIPlaybackPosition ) {
+                mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_STOPPED,mMediaPlayer.getCurrentPosition(),1.0f);
+                mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
+            }
+        }
+    }
+
+    private void updateProgressCallbackTask() {
+        if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+            int currentPosition = mMediaPlayer.getCurrentPosition();
+            mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_PLAYING,currentPosition,1.0f);
+            mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
+        }
+    }
+//    private void updateProgressCallbackTask() {
+//        if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+//            int currentPosition = mMediaPlayer.getCurrentPosition();
+//            if (mMediaSession != null) {
+//                // mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.ACTION_SEEK_TO,mMediaPlayer.getCurrentPosition(),0);
+//                // mPlaybackStateCompatBuilder.setBufferedPosition(currentPosition);
+//                mPlaybackStateCompatBuilder.
+//            }
+//        }
+//    }
+
     void pauseMusic() {
             mMediaPlayer.pause();
             mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_PAUSED, mMediaPlayer.getCurrentPosition(), 0);
@@ -301,6 +364,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
         mMediaPlayer.stop();
         mMediaPlayer.reset();
         AudioManager am = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        stopUpdatingCallbackWithPosition(true);
         // Abandon audio focus
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             am.abandonAudioFocusRequest(audioFocusRequest);
@@ -314,6 +378,15 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 //        unregisterReceiver(myNoisyAudioStreamReceiver);
         stopForeground(true);
 
+    }
+
+    @Override
+    public void onPrepared(MediaPlayer mp) {
+        // initializeProgressCallback();
+        mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_PLAYING, mMediaPlayer.getCurrentPosition(), 1.0f);
+        mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
+        mMediaPlayer.start();
+        startUpdatingCallbackWithPosition();
     }
 
     void prepare() {
@@ -336,7 +409,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             sendBroadcast(intent);
 
             registerReceiver(myNoisyAudioStreamReceiver, intentFilter);
-
             mMediaPlayer.start();
         }else {
             mPosition = mDefaultSharedPreferences.getInt("position", 0);
@@ -347,6 +419,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, playSong.getTitle());
             mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, playSong.getArtist());
             mMediaMetadataCompatBuilder.putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI,playSong.getAlbumUri());
+            mMediaMetadataCompatBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION,playSong.getDuration());
             //get id
             long currSong = playSong.getId();
             //set uri
@@ -363,7 +436,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
             mMediaSession.setMetadata(mMediaMetadataCompatBuilder.build());
 
-            mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_PLAYING, mMediaPlayer.getCurrentPosition(), 1.0f);
+            mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_BUFFERING,0, 1.0f);
+//            mPlaybackStateCompatBuilder.setBufferedPosition(mMediaPlayer.getCurrentPosition());
+//              mPlaybackStateCompatBuilder.setBufferedPosition(0);
             mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
 
             mMediaSession.setActive(true);
@@ -446,7 +521,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             SharedPreferences.Editor editor = mDefaultSharedPreferences.edit();
             editor.putInt("position", --mPosition);
             editor.commit();
-            mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS, mMediaPlayer.getCurrentPosition(), 0);
+            mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS, 0, 0);
+//            mPlaybackStateCompatBuilder.setBufferedPosition(0);
             mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
             playMusic();
         }
@@ -459,7 +535,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             SharedPreferences.Editor editor = mDefaultSharedPreferences.edit();
             editor.putInt("position", ++mPosition);
             editor.commit();
-            mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT, mMediaPlayer.getCurrentPosition(), 0);
+            mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT, 0, 0);
+//            mPlaybackStateCompatBuilder.setBufferedPosition(0);
             mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
             playMusic();
         }

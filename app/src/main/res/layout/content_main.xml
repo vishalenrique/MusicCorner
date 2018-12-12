@@ -18,7 +18,7 @@
     <FrameLayout
         android:id="@+id/fl_controls_container_main"
         android:layout_width="match_parent"
-        android:layout_height="120dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentLeft="true"
@@ -37,6 +37,14 @@
                 android:layout_gravity="center"
                 android:text="nextActivity"
                 android:onClick="nextActivity"/>
+
+
+            <SeekBar
+                android:id="@+id/sb_main"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:layout_marginTop="16dp"/>
 
             <TextView
                 android:id="@+id/song_title_main"

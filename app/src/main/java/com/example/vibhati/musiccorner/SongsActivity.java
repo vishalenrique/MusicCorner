@@ -27,12 +27,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.FrameLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.InterstitialAd;
 
 import java.util.ArrayList;
 
@@ -47,6 +44,7 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
     TextView mSongTitle;
     ViewPager mViewPager;
     TabLayout mTabLayout;
+    SeekBar mSeekBar;
     private MediaBrowserCompat mMediaBrowser;
     private MediaBrowserCompat.ConnectionCallback mConnectionCallbacks = new MediaBrowserCompat.ConnectionCallback (){
 
@@ -85,6 +83,7 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
             super.onConnectionFailed();
         }
     };
+    private boolean mUserIsSeeking = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,20 +121,36 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
                 case PlaybackStateCompat.STATE_STOPPED:
                     mPlayPause.setText("Play");
                     break;
+                case PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS:
+                    updateSeekBarState(state);
+                case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT:
+                    updateSeekBarState(state);
+                case PlaybackStateCompat.STATE_BUFFERING:
+                    updateSeekBarState(state);
             }
+
+            updateSeekBarState(state);
         }
 
         @Override
         public void onMetadataChanged(MediaMetadataCompat metadata) {
             mSongTitle.setText(metadata.getDescription().getTitle());
+            mSeekBar.setMax((int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION));
         }
     };
+
+    private void updateSeekBarState(PlaybackStateCompat state) {
+//        int bufferedPosition = (int) state.getBufferedPosition();
+        mSeekBar.setProgress((int) state.getPosition());
+    }
 
     private void buildTransportControls() {
         mTabLayout = findViewById(R.id.tl_main);
         mViewPager = findViewById(R.id.vp_main);
         mPlayPause = findViewById(R.id.play_pause_main);
         mSongTitle = findViewById(R.id.song_title_main);
+        mSeekBar = findViewById(R.id.sb_main);
+        initializeSeekBar();
         setupViewPagerAndTabLayout();
         updateSongs();
 
@@ -147,12 +162,17 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
         MediaMetadataCompat metadata = mediaController.getMetadata();
         PlaybackStateCompat pbState = mediaController.getPlaybackState();
 
-        if( pbState.getState() != PlaybackStateCompat.STATE_PLAYING){
-            mPlayPause.setText("Play");
-        }else{
+        if( pbState.getState() == (PlaybackStateCompat.STATE_PLAYING | PlaybackStateCompat.STATE_BUFFERING)){
             mPlayPause.setText("Pause");
+        }else{
+            mPlayPause.setText("Play");
         }
         mSongTitle.setText(metadata.getDescription().getTitle());
+        int maxWithoutCasting = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
+        mSeekBar.setMax(maxWithoutCasting);
+
+        Log.i(TAG,"maxWithoutCasting: "+ maxWithoutCasting);
+        Log.i(TAG,"maxWithCasting: "+ mSeekBar.getMax());
 
         // Register a Callback to stay in sync
         mediaController.registerCallback(mControllerCallback);
@@ -169,6 +189,30 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
                         MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().pause();
                     }
                 }
+            }
+        });
+    }
+
+    private void initializeSeekBar() {
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            int userSelectedPosition = 0;
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                mUserIsSeeking = true;
+            }
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if(fromUser){
+                    userSelectedPosition = progress;
+                }
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                mUserIsSeeking = false;
+                MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().seekTo(userSelectedPosition);
             }
         });
     }

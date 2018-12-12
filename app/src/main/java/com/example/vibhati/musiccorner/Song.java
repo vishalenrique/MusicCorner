@@ -21,11 +21,29 @@ public class Song implements Parcelable {
     @ColumnInfo(name = "album_uri")
     private String albumUri;
 
-    public Song(@NonNull long id, String title, String artist, String albumUri) {
+    private long duration;
+
+//    public Song(@NonNull long id, String title, String artist, String albumUri) {
+//        this.id = id;
+//        this.title = title;
+//        this.artist = artist;
+//        this.albumUri = albumUri;
+//    }
+
+    public Song(@NonNull long id, String title, String artist, String albumUri, long duration) {
         this.id = id;
         this.title = title;
         this.artist = artist;
         this.albumUri = albumUri;
+        this.duration = duration;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
     }
 
     public String getAlbumUri() {
@@ -74,6 +92,37 @@ public class Song implements Parcelable {
         this.artist = artist;
     }
 
+//    @Override
+//    public int describeContents() {
+//        return 0;
+//    }
+//
+//    @Override
+//    public void writeToParcel(Parcel dest, int flags) {
+//        dest.writeLong(this.id);
+//        dest.writeString(this.title);
+//        dest.writeString(this.artist);
+//        dest.writeString(this.albumUri);
+//    }
+//
+//    protected Song(Parcel in) {
+//        this.id = in.readLong();
+//        this.title = in.readString();
+//        this.artist = in.readString();
+//        this.albumUri = in.readString();
+//    }
+//
+//    public static final Creator<Song> CREATOR = new Creator<Song>() {
+//        @Override
+//        public Song createFromParcel(Parcel source) {
+//            return new Song(source);
+//        }
+//
+//        @Override
+//        public Song[] newArray(int size) {
+//            return new Song[size];
+//        }
+//    };
 
     @Override
     public int describeContents() {
@@ -86,6 +135,7 @@ public class Song implements Parcelable {
         dest.writeString(this.title);
         dest.writeString(this.artist);
         dest.writeString(this.albumUri);
+        dest.writeLong(this.duration);
     }
 
     protected Song(Parcel in) {
@@ -93,6 +143,7 @@ public class Song implements Parcelable {
         this.title = in.readString();
         this.artist = in.readString();
         this.albumUri = in.readString();
+        this.duration = in.readLong();
     }
 
     public static final Creator<Song> CREATOR = new Creator<Song>() {
