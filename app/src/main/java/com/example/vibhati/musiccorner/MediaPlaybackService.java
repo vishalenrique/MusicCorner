@@ -410,7 +410,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
             mMediaSession.setMetadata(mMediaMetadataCompatBuilder.build());
 
-            mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_BUFFERING,0, 1.0f);
+            mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_PLAYING,0, 1.0f);
             mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
 
             mMediaSession.setActive(true);

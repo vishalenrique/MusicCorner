@@ -23,6 +23,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.support.v7.widget.Toolbar;
 import android.widget.TextView;
 
 import com.google.android.gms.ads.AdRequest;
@@ -118,6 +119,10 @@ public class MediaPlayerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_media_player);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         mMediaBrowser = new MediaBrowserCompat(this,
                 new ComponentName(this, MediaPlaybackService.class),
                 mConnectionCallbacks,
