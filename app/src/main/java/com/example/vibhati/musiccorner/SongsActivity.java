@@ -229,7 +229,7 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
         }
 
         if(bitmap == null){
-            mAlbumArt.setImageResource(R.drawable.round_music_symbol);
+            mAlbumArt.setImageResource(R.drawable.roundedsquare_music_symbol);
         }else {
             mAlbumArt.setImageBitmap(bitmap);
         }

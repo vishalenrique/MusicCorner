@@ -53,6 +53,8 @@
             android:layout_alignParentTop="true"
             android:layout_marginLeft="4dp"
             android:layout_marginStart="4dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginEnd="4dp"
             android:layout_marginTop="8dp"
             android:layout_toEndOf="@id/iv_art_main"
             android:layout_toRightOf="@id/iv_art_main"

@@ -15,7 +15,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".SongsActivity"
-            android:label="@string/title_activity_songs"
+            android:label="@string/app_name"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">

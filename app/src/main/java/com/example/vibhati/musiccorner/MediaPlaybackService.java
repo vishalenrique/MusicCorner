@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
@@ -247,6 +248,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
              bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), description.getIconUri());
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        if(bitmap == null){
+            bitmap = BitmapFactory.decodeResource(context.getResources(),R.drawable.roundedsquare_music_symbol);
         }
 
         builder
