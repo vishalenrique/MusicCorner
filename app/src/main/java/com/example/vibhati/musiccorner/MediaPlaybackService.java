@@ -44,7 +44,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class MediaPlaybackService extends MediaBrowserServiceCompat implements MediaPlayer.OnPreparedListener {
+public class MediaPlaybackService extends MediaBrowserServiceCompat implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
 
     private static final int NOTIFICATION_ID = 234;
     private static final int PENDING_INTENT_REQUEST_CODE = 32;
@@ -183,6 +183,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
         mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setOnPreparedListener(this);
+        mMediaPlayer.setOnCompletionListener(this);
         mDefaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         mSongList = MediaLibrary.getData(getApplicationContext());
@@ -530,6 +531,17 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
         if (mMediaSession != null) {
             mMediaSession.release();
             mMediaSession = null;
+        }
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+        int size = mIsFavoriteMode?mFavoriteSongList.size():mSongList.size();
+        if(mPosition == (size-1)){
+            mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_NONE,mMediaPlayer.getCurrentPosition(),1.0f);
+            mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
+        }else {
+            nextSong();
         }
     }
 

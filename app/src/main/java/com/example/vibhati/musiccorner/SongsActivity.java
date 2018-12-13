@@ -97,12 +97,30 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSION_REQUEST_READ_EXTERNAL_STORAGE);
+            }else{
+                initializeMediaBrowser();
             }
         }else{
-            mMediaBrowser = new MediaBrowserCompat(this,
-                    new ComponentName(this, MediaPlaybackService.class),
-                    mConnectionCallbacks,
-                    null);
+            initializeMediaBrowser();
+        }
+    }
+
+    private void initializeMediaBrowser() {
+        mMediaBrowser = new MediaBrowserCompat(this,
+                new ComponentName(this, MediaPlaybackService.class),
+                mConnectionCallbacks,
+                null);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSION_REQUEST_READ_EXTERNAL_STORAGE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    initializeMediaBrowser();
+                    mMediaBrowser.connect();
+                }
+            }
         }
     }
 
@@ -124,6 +142,9 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
                 case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT:
                     updateSeekBarState(state);
                 case PlaybackStateCompat.STATE_BUFFERING:
+                    updateSeekBarState(state);
+                case PlaybackStateCompat.STATE_NONE:
+                    mPlayPause.setImageResource(R.drawable.play);
                     updateSeekBarState(state);
             }
 
@@ -263,21 +284,9 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
     @Override
     protected void onStart() {
         super.onStart();
-        mMediaBrowser.connect();
-    }
-
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSION_REQUEST_READ_EXTERNAL_STORAGE: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mMediaBrowser = new MediaBrowserCompat(this,
-                            new ComponentName(this, MediaPlaybackService.class),
-                            mConnectionCallbacks,
-                            null);
-                }
-            }
+        Log.i(TAG,"onStart called");
+        if(mMediaBrowser != null) {
+            mMediaBrowser.connect();
         }
     }
 
@@ -302,9 +311,12 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
         if (MediaControllerCompat.getMediaController(SongsActivity.this) != null) {
             MediaControllerCompat.getMediaController(SongsActivity.this).unregisterCallback(mControllerCallback);
         }
-        if(MediaControllerCompat.getMediaController(SongsActivity.this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PAUSED ){
-            MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().stop();
+        if(MediaControllerCompat.getMediaController(SongsActivity.this) !=null) {
+            if (MediaControllerCompat.getMediaController(SongsActivity.this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PAUSED) {
+                MediaControllerCompat.getMediaController(SongsActivity.this).getTransportControls().stop();
+            }
         }
+        if(mMediaBrowser!=null)
         mMediaBrowser.disconnect();
     }
 
