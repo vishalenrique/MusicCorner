@@ -347,11 +347,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(getApplication(), MusicWidget.class));
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
             sendBroadcast(intent);
-
             unregisterReceiver(myNoisyAudioStreamReceiver);
     }
 
     void stopMusic() {
+        int state = mMediaSession.getController().getPlaybackState().getState();
+        if(state == PlaybackStateCompat.STATE_PLAYING){
+            unregisterReceiver(myNoisyAudioStreamReceiver);
+        }
         mMediaPlayer.stop();
         mMediaPlayer.reset();
         AudioManager am = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
@@ -460,7 +463,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
             sendBroadcast(intent);
 
-
             registerReceiver(myNoisyAudioStreamReceiver, intentFilter);
 
             mMediaPlayer.prepareAsync();
@@ -551,11 +553,12 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
     @Override
     public void onCompletion(MediaPlayer mp) {
+        int state = mMediaSession.getController().getPlaybackState().getState();
         int size = mIsFavoriteMode?mFavoriteSongList.size():mSongList.size();
         if(mPosition == (size-1)){
-            mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_NONE,mMediaPlayer.getCurrentPosition(),PLAYBACK_SPEED);
+            mPlaybackStateCompatBuilder.setState(PlaybackStateCompat.STATE_NONE,mp.getCurrentPosition(),PLAYBACK_SPEED);
             mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
-        }else {
+        }else if(state == PlaybackStateCompat.STATE_PLAYING){
             nextSong();
         }
     }
