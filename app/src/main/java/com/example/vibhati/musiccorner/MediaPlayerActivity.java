@@ -36,6 +36,7 @@ import java.util.List;
 
 public class MediaPlayerActivity extends AppCompatActivity {
     private static final String TAG = MediaPlayerActivity.class.getSimpleName();
+    private static final int PREF_POSITION_DEF = 0;
     ImageView mPlayPause;
     ImageView mAlbumArt;
     TextView mSongTitle;
@@ -144,7 +145,7 @@ public class MediaPlayerActivity extends AppCompatActivity {
         initializeSeekBar();
 
         mSongList = MediaLibrary.getInstance().getData(this);
-        mSong = mSongList.get(PreferenceManager.getDefaultSharedPreferences(this).getInt(getString(R.string.position), 0));
+        mSong = mSongList.get(PreferenceManager.getDefaultSharedPreferences(this).getInt(getString(R.string.position), PREF_POSITION_DEF));
 
 
         mSongViewModel = ViewModelProviders.of(this).get(SongViewModel.class);

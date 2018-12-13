@@ -27,6 +27,9 @@ public class MusicWidget extends AppWidgetProvider {
     public static final String SONG_NAME = "songName";
     public static final String isPlaying = "isPlaying";
     public static final String ALBUM_ART = "albumArt";
+    private static final int REQUEST_CODE_PLAY = 23;
+    private static final int REQUEST_CODE_PREVIOUS = 24;
+    private static final int REQUEST_CODE_NEXT = 25;
 
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {
@@ -60,15 +63,15 @@ public class MusicWidget extends AppWidgetProvider {
 
         Intent intentPlay = new Intent(context, MediaPlaybackService.class);
         intentPlay.setAction(MediaPlaybackService.ACTION_WIDGET_PLAY);
-        views.setOnClickPendingIntent(R.id.widget_play, PendingIntent.getService(context,23,intentPlay,PendingIntent.FLAG_UPDATE_CURRENT));
+        views.setOnClickPendingIntent(R.id.widget_play, PendingIntent.getService(context,REQUEST_CODE_PLAY,intentPlay,PendingIntent.FLAG_UPDATE_CURRENT));
 
         Intent intentPrevious = new Intent(context, MediaPlaybackService.class);
         intentPrevious.setAction(MediaPlaybackService.ACTION_WIDGET_PREVIOUS);
-        views.setOnClickPendingIntent(R.id.widget_previous, PendingIntent.getService(context,24,intentPrevious,PendingIntent.FLAG_UPDATE_CURRENT));
+        views.setOnClickPendingIntent(R.id.widget_previous, PendingIntent.getService(context,REQUEST_CODE_PREVIOUS,intentPrevious,PendingIntent.FLAG_UPDATE_CURRENT));
 
         Intent intentNext = new Intent(context, MediaPlaybackService.class);
         intentNext.setAction(MediaPlaybackService.ACTION_WIDGET_NEXT);
-        views.setOnClickPendingIntent(R.id.widget_next, PendingIntent.getService(context,25,intentNext,PendingIntent.FLAG_UPDATE_CURRENT));
+        views.setOnClickPendingIntent(R.id.widget_next, PendingIntent.getService(context,REQUEST_CODE_NEXT,intentNext,PendingIntent.FLAG_UPDATE_CURRENT));
 
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views);

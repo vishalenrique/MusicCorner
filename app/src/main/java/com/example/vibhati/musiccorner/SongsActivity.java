@@ -284,7 +284,6 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
     @Override
     protected void onStart() {
         super.onStart();
-        Log.i(TAG,"onStart called");
         if(mMediaBrowser != null) {
             mMediaBrowser.connect();
         }
