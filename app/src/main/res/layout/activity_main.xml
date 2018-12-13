@@ -9,15 +9,22 @@
         android:id="@+id/tl_main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:tabGravity="fill"
         android:focusable="true"
+        android:nextFocusDown="@id/vp_main"
+        android:nextFocusRight="@id/vp_main"
+        app:tabGravity="fill"
         app:tabMode="fixed" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/vp_main"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:focusable="true"
+        android:nextFocusDown="@id/iv_art_main"
+        android:nextFocusLeft="@id/tl_main"
+        android:nextFocusRight="@id/iv_art_main"
+        android:nextFocusUp="@id/tl_main" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -32,6 +39,11 @@
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:contentDescription="@string/album_art"
+            android:focusable="true"
+            android:nextFocusDown="@id/sb_main"
+            android:nextFocusLeft="@id/vp_main"
+            android:nextFocusRight="@id/sb_main"
+            android:nextFocusUp="@id/vp_main"
             android:onClick="nextActivity" />
 
         <TextView
@@ -57,7 +69,12 @@
             android:layout_marginBottom="8dp"
             android:layout_marginTop="8dp"
             android:layout_toEndOf="@id/iv_art_main"
-            android:layout_toRightOf="@id/iv_art_main" />
+            android:layout_toRightOf="@id/iv_art_main"
+            android:focusable="true"
+            android:nextFocusDown="@id/iv_previous_main"
+            android:nextFocusLeft="@id/iv_art_main"
+            android:nextFocusRight="@id/iv_previous_main"
+            android:nextFocusUp="@id/iv_art_main" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -71,26 +88,39 @@
                 android:layout_width="0dp"
                 android:layout_height="24dp"
                 android:layout_weight="1"
+                android:contentDescription="@string/previous_song"
+                android:focusable="true"
+                android:nextFocusDown="@id/play_pause_main"
+                android:nextFocusLeft="@id/sb_main"
+                android:nextFocusRight="@id/play_pause_main"
+                android:nextFocusUp="@id/sb_main"
                 android:onClick="previousSong"
-                android:src="@drawable/previous"
-                android:contentDescription="@string/previous_song" />
+                android:src="@drawable/previous" />
 
             <ImageView
                 android:id="@+id/play_pause_main"
                 android:layout_width="0dp"
                 android:layout_height="24dp"
                 android:layout_weight="1"
-                android:src="@drawable/play"
-                android:contentDescription="@string/play_and_pause" />
+                android:contentDescription="@string/play_and_pause"
+                android:focusable="true"
+                android:nextFocusDown="@id/iv_next_main"
+                android:nextFocusLeft="@id/iv_previous_main"
+                android:nextFocusRight="@id/iv_next_main"
+                android:nextFocusUp="@id/iv_previous_main"
+                android:src="@drawable/play" />
 
             <ImageView
                 android:id="@+id/iv_next_main"
                 android:layout_width="0dp"
                 android:layout_height="24dp"
                 android:layout_weight="1"
+                android:contentDescription="@string/next_song"
+                android:focusable="true"
+                android:nextFocusLeft="@id/play_pause_main"
+                android:nextFocusUp="@id/play_pause_main"
                 android:onClick="nextSong"
-                android:src="@drawable/next"
-                android:contentDescription="@string/next_song" />
+                android:src="@drawable/next" />
         </LinearLayout>
 
     </RelativeLayout>

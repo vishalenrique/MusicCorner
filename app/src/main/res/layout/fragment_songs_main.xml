@@ -4,9 +4,8 @@
     android:id="@+id/rv_main"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_above="@id/fl_controls_container_main"
     android:layout_alignParentLeft="true"
+    android:layout_alignParentStart="true"
     android:layout_alignParentTop="true"
     tools:listitem="@layout/list_item"
-    tools:showIn="@layout/content_main"
-    android:layout_alignParentStart="true" />
+    tools:showIn="@layout/activity_main" />

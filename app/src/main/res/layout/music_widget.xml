@@ -7,7 +7,10 @@
         android:id="@+id/widget_album_art"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:contentDescription="@string/album_art" />
+        android:contentDescription="@string/album_art"
+        android:focusable="true"
+        android:nextFocusDown="@id/widget_previous"
+        android:nextFocusRight="@id/widget_previous" />
 
     <TextView
         android:id="@+id/widget_title"
@@ -23,8 +26,8 @@
         android:layout_toEndOf="@id/widget_album_art"
         android:layout_toRightOf="@id/widget_album_art"
         android:ellipsize="end"
-        android:textColor="#FFFFFF"
         android:maxLines="1"
+        android:textColor="#FFFFFF"
         android:textSize="18sp" />
 
     <LinearLayout
@@ -43,6 +46,11 @@
             android:layout_height="24dp"
             android:layout_weight="1"
             android:contentDescription="@string/previous_song"
+            android:focusable="true"
+            android:nextFocusDown="@id/widget_play"
+            android:nextFocusLeft="@id/widget_album_art"
+            android:nextFocusRight="@id/widget_play"
+            android:nextFocusUp="@id/widget_album_art"
             android:src="@drawable/previous" />
 
         <ImageView
@@ -50,7 +58,12 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_weight="1"
-            android:contentDescription="@string/play_and_pause" />
+            android:contentDescription="@string/play_and_pause"
+            android:focusable="true"
+            android:nextFocusDown="@id/widget_next"
+            android:nextFocusLeft="@id/widget_previous"
+            android:nextFocusRight="@id/widget_next"
+            android:nextFocusUp="@id/widget_previous" />
 
         <ImageView
             android:id="@+id/widget_next"
@@ -58,6 +71,9 @@
             android:layout_height="24dp"
             android:layout_weight="1"
             android:contentDescription="@string/next_song"
+            android:focusable="true"
+            android:nextFocusLeft="@id/widget_play"
+            android:nextFocusUp="@id/widget_play"
             android:src="@drawable/next" />
     </LinearLayout>
 
