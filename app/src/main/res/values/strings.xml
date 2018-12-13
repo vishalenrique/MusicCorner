@@ -32,4 +32,6 @@
     <string name="analytics_event_like_unlike">LIKE_UNLIKE</string>
     <string name="error_message">Error setting data source</string>
     <string name="exception">Exception</string>
+    <string name="added_to_favorites">Added to favorites</string>
+    <string name="delete_from_favorites">Deleted from favorites</string>
 </resources>

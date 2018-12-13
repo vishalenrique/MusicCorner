@@ -291,7 +291,7 @@ public class SongsActivity extends AppCompatActivity implements OnSongClickListe
     }
 
     private void updateSongs() {
-        songList = MediaLibrary.getData(SongsActivity.this);
+        songList = MediaLibrary.getInstance().getData(SongsActivity.this);
     }
 
     @Override

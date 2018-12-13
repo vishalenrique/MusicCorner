@@ -54,7 +54,7 @@ public class SongsFragment extends Fragment implements SongAdapter.ClickListener
     }
 
     private void updateSongs() {
-        songList = MediaLibrary.getData(getActivity());
+        songList = MediaLibrary.getInstance().getData(getActivity());
         mAdapter.dataChanged(songList);
     }
 }

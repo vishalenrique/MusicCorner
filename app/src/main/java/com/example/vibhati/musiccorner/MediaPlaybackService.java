@@ -186,7 +186,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
         mMediaPlayer.setOnCompletionListener(this);
         mDefaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-        mSongList = MediaLibrary.getData(getApplicationContext());
+        mSongList = MediaLibrary.getInstance().getData(getApplicationContext());
 
         SongRepository.getInstance(getApplication()).getSongs().observeForever(new Observer<List<Song>>() {
             @Override

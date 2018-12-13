@@ -14,8 +14,18 @@ import java.util.List;
 public class MediaLibrary {
 
     private static ArrayList<Song> songList;
+    private static MediaLibrary instance;
 
-    public static ArrayList<Song> getData(Context context){
+    private MediaLibrary() {
+    }
+
+    static{
+        instance = new MediaLibrary();
+    }
+
+    public static MediaLibrary getInstance(){return  instance;}
+
+    public ArrayList<Song> getData(Context context){
         Uri sArtworkUri = Uri.parse(context.getString(R.string.album_art_uri));
         if(songList == null) {
             Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null, null);

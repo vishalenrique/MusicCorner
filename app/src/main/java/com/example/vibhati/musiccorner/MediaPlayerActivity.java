@@ -25,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.support.v7.widget.Toolbar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -142,7 +143,7 @@ public class MediaPlayerActivity extends AppCompatActivity {
         AdView adView = findViewById(R.id.adView);
         initializeSeekBar();
 
-        mSongList = MediaLibrary.getData(this);
+        mSongList = MediaLibrary.getInstance().getData(this);
         mSong = mSongList.get(PreferenceManager.getDefaultSharedPreferences(this).getInt(getString(R.string.position), 0));
 
 
@@ -164,9 +165,11 @@ public class MediaPlayerActivity extends AppCompatActivity {
                 Analytics.getInstance().logEvent(MediaPlayerActivity.this, getString(R.string.analytics_event_like_unlike), null);
                 if (!isFavorite) {
                     mSongViewModel.insert(mSong);
+                    Toast.makeText(MediaPlayerActivity.this, R.string.added_to_favorites, Toast.LENGTH_SHORT).show();
 
                 } else {
                     mSongViewModel.deleteSong(mSong.getId());
+                    Toast.makeText(MediaPlayerActivity.this, R.string.delete_from_favorites, Toast.LENGTH_SHORT).show();
                 }
                 isFavorite = !isFavorite;
                 updateState();
