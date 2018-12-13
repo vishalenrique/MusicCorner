@@ -40,6 +40,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -141,6 +142,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
         public void onSkipToNext() {
            nextSong();
         }
+
+        @Override
+        public void onSetShuffleMode(int shuffleMode) {
+            int size = mIsFavoriteMode?mFavoriteSongList.size():mSongList.size();
+            Random random = new Random();
+            mDefaultSharedPreferences.edit().putInt(getString(R.string.position), random.nextInt(size)).commit();
+            playMusic();
+        }
     };
 
     private void seekToPosition(long pos) {
@@ -168,7 +177,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
 
         mPlaybackStateCompatBuilder = new PlaybackStateCompat.Builder();
         mPlaybackStateCompatBuilder.setActions(
-                PlaybackStateCompat.ACTION_SEEK_TO | PlaybackStateCompat.ACTION_SET_CAPTIONING_ENABLED | PlaybackStateCompat.ACTION_PLAY |PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS | PlaybackStateCompat.ACTION_SKIP_TO_NEXT);
+               PlaybackStateCompat.ACTION_SET_SHUFFLE_MODE | PlaybackStateCompat.ACTION_SEEK_TO | PlaybackStateCompat.ACTION_SET_CAPTIONING_ENABLED | PlaybackStateCompat.ACTION_PLAY |PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS | PlaybackStateCompat.ACTION_SKIP_TO_NEXT);
         setSessionToken(mMediaSession.getSessionToken());
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {

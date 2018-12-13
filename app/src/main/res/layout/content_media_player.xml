@@ -46,6 +46,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="10dp"
         android:contentDescription="@string/shuffle"
+        android:onClick="shuffle"
         android:src="@drawable/shuffle" />
 
     <TextView

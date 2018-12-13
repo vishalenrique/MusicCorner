@@ -276,11 +276,15 @@ public class MediaPlayerActivity extends AppCompatActivity {
     }
 
     public void previousSong(View view) {
-        MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().skipToPrevious();
+        if (mMediaBrowser.isConnected()) {
+            MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().skipToPrevious();
+        }
     }
 
     public void nextSong(View view) {
-        MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().skipToNext();
+        if (mMediaBrowser.isConnected()) {
+            MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().skipToNext();
+        }
     }
 
     public void stopService(View view) {
@@ -312,7 +316,9 @@ public class MediaPlayerActivity extends AppCompatActivity {
         if (MediaControllerCompat.getMediaController(MediaPlayerActivity.this) != null) {
             MediaControllerCompat.getMediaController(MediaPlayerActivity.this).unregisterCallback(mControllerCallback);
         }
-        mMediaBrowser.disconnect();
+        if (mMediaBrowser.isConnected()) {
+            mMediaBrowser.disconnect();
+        }
     }
 
     @Override
@@ -346,5 +352,9 @@ public class MediaPlayerActivity extends AppCompatActivity {
                 return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    public void shuffle(View view) {
+        MediaControllerCompat.getMediaController(MediaPlayerActivity.this).getTransportControls().setShuffleMode(0);
     }
 }
