@@ -9,7 +9,6 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.media.AudioAttributes;
@@ -59,6 +58,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
     private static final float PLAYBACK_SPEED = 1.0f;
     private static final float PLAYBACK_SPEED_ZERO = 0;
     private static final long CURRENT_POSITION_ZERO = 0;
+    private static final int CUSTOM_STATE_SHUFFLE = -4;
     private static String channelId = "channelId";
     private static final String TAG = MediaPlaybackService.class.getSimpleName();
     private MediaPlayer mMediaPlayer;
@@ -155,6 +155,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat implements M
             int size = mIsFavoriteMode?mFavoriteSongList.size():mSongList.size();
             Random random = new Random();
             mDefaultSharedPreferences.edit().putInt(getString(R.string.position), random.nextInt(size)).commit();
+            mPlaybackStateCompatBuilder.setState(CUSTOM_STATE_SHUFFLE,mMediaPlayer.getCurrentPosition(),PLAYBACK_SPEED);
+            mMediaSession.setPlaybackState(mPlaybackStateCompatBuilder.build());
             playMusic();
         }
     };

@@ -48,6 +48,7 @@ public class MediaPlayerActivity extends AppCompatActivity {
     private SongViewModel mSongViewModel;
     private List<Song> mFavoriteSongList;
     private boolean isFavorite;
+    private final int CUSTOM_STATE_SHUFFLE = -4;
     private boolean mUserIsSeeking;
 
     private MediaBrowserCompat.ConnectionCallback mConnectionCallbacks = new MediaBrowserCompat.ConnectionCallback() {
@@ -103,6 +104,8 @@ public class MediaPlayerActivity extends AppCompatActivity {
                     updateSeekBarState(state);
                 case PlaybackStateCompat.STATE_BUFFERING:
                     updateSeekBarState(state);
+                case CUSTOM_STATE_SHUFFLE:
+                    refreshLikeIcon();
             }
 
             updateSeekBarState(state);
@@ -145,8 +148,6 @@ public class MediaPlayerActivity extends AppCompatActivity {
         initializeSeekBar();
 
         mSongList = MediaLibrary.getInstance().getData(this);
-        mSong = mSongList.get(PreferenceManager.getDefaultSharedPreferences(this).getInt(getString(R.string.position), PREF_POSITION_DEF));
-
 
         mSongViewModel = ViewModelProviders.of(this).get(SongViewModel.class);
         mSongViewModel.getAllSongs().observe(this, new Observer<List<Song>>() {
@@ -154,8 +155,7 @@ public class MediaPlayerActivity extends AppCompatActivity {
             public void onChanged(@Nullable List<Song> songs) {
                 if (songs != null) {
                     mFavoriteSongList = songs;
-                    isFavorite = mFavoriteSongList.contains(mSong);
-                    updateState();
+                    refreshLikeIcon();
                 }
             }
         });
@@ -227,6 +227,12 @@ public class MediaPlayerActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void refreshLikeIcon() {
+        mSong = mSongList.get(PreferenceManager.getDefaultSharedPreferences(this).getInt(getString(R.string.position), PREF_POSITION_DEF));
+        isFavorite = mFavoriteSongList.contains(mSong);
+        updateState();
     }
 
     private void setAlbumArt(MediaDescriptionCompat description) {
